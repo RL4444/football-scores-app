@@ -4,8 +4,10 @@ const fs = require('fs');
 const path = require('path');
 
 const { Fixtures } = require('../models/Fixtures');
+const Standings = require('../models/Standings');
 const { getFixturesAndResults, getStandings } = require('../src/scrapers/index');
-const { createScrapeUrl, keys } = require('../src/utils');
+const { createScrapeUrl, keys, sleep, getSeasonYear } = require('../src/utils');
+const { updateAllCompetitionGames } = require('./updateAll');
 
 const { sendMail } = require('../mailer/index');
 
@@ -14,52 +16,78 @@ const hourlyStandingsUpdate = cron.schedule('0 10-23 * * *', async () => {
         const url = createScrapeUrl(competition, 'standings', moment().format('yyyy-MM'));
 
         try {
-            const result = await getStandings(url, keys[competition], false);
+            const { data, error } = await getStandings(url, keys[competition], false);
 
-            if (result.error) {
+            if (error) {
                 console.log('error getting standings for ', keys[competition]);
             } else {
-                console.log('Standings updated for ', keys[competition]);
+                const result = await Standings.findOneAndUpdate(
+                    {
+                        id: `${competition}_${getSeasonYear()}`,
+                    },
+                    {
+                        competition: keys[competition],
+                        season: getSeasonYear(),
+                        lastUpdated: new Date(),
+                        standings: data,
+                    },
+                    { upsert: true, useFindAndModify: false }
+                );
+                if (result) {
+                    console.log('result from standings db insert ', { result });
+                    console.log('standings insert result from mongo for ', keys[competition]);
+                }
             }
         } catch (error) {
             console.log('error getting standings ', error);
+        } finally {
+            await sleep(2000);
         }
     });
 });
 
 const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
     Object.keys(keys).forEach(async (competition) => {
-        const url = createScrapeUrl(competition, 'scores-fixtures', moment().format('yyyy-MM'));
-        const result = await getFixturesAndResults(url, true, keys[competition], false);
-        try {
-            if (!result.error) {
-                const success = await sendMail(
-                    'monthlyScrapeReport',
-                    { subject: `Monthly fixtures for ${keys[competition]}`, from: 'System' },
-                    {
-                        fixtures: result.data.map((eachFixture) => {
-                            return { id: eachFixture.id, date: eachFixture.ko_timestamp };
-                        }),
-                    }
-                );
+        const url = createScrapeUrl(competition, 'fixtures', moment().format('yyyy-MM'));
+        const { data, error } = await getFixturesAndResults(url, true, keys[competition], false);
+        if (error) {
+            console.log(error);
+            await sendMail(
+                'errorReport',
+                { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
+                { errors: [`competition ${keys[competition]} did not update for its monthly schedule`] }
+            );
+            return;
+        }
+        const result = await Fixtures.bulkWrite(
+            data.map((eachFixture) => ({
+                updateOne: {
+                    filter: { id: eachFixture.id },
+                    update: eachFixture,
+                    upsert: true,
+                },
+            }))
+        );
 
-                if (success) {
-                    console.log('Mail send successfully');
-                } else {
-                    console.log('error sending mail');
+        if (!error && result) {
+            console.log({ result });
+            console.log(`updated scores for ${job.games.map((gme) => gme).join(' ')}`);
+            const success = await sendMail(
+                'monthlyScrapeReport',
+                { subject: `Monthly fixtures for ${keys[competition]}`, from: 'System' },
+                {
+                    fixtures: result.data.map((eachFixture) => {
+                        return { id: eachFixture.id, date: eachFixture.ko_timestamp };
+                    }),
                 }
+            );
+
+            if (success) {
+                console.log('Mail send successfully');
             } else {
-                const success = await sendMail(
-                    'errorReport',
-                    { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
-                    { errors: [`competition ${keys[competition]} did not update for its monthly schedule`] }
-                );
-
-                if (success) {
-                    console.log('Error mail sent');
-                }
+                console.log('error sending mail');
             }
-        } catch (error) {
+        } else {
             const success = await sendMail(
                 'errorReport',
                 { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
@@ -71,6 +99,18 @@ const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
             }
         }
     });
+});
+
+const updateAllPreviousJob = cron.schedule('38 20 * * *', async () => {
+    try {
+        console.log('starting updated all -- fingers crossed');
+        const result = await updateAllCompetitionGames();
+        console.log({ result });
+    } catch (error) {
+        console.log({ error });
+    } finally {
+        console.log('finished updating all');
+    }
 });
 
 const popFunction = async () => {
@@ -189,20 +229,29 @@ const fixturesUpdateJobs = cron.schedule(`*/2 10-23 * * *`, async () => {
         await popFunction();
     }
 
-    console.log({ todaysJobs });
     if (todaysJobs.jobs && todaysJobs.jobs.length > 0) {
         todaysJobs.jobs.forEach(async (job) => {
             const matchHappeningNow = moment().isAfter(job.from) && moment().isBefore(job.to);
-            console.log('match start time', moment(job.from));
-            console.log('match end time ', moment(job.to));
 
             if (matchHappeningNow) {
                 console.log(job.games.map((gme) => gme).join(' '), 'happening -- scraping scores');
-                const scrapeResult = await getFixturesAndResults(job.url, true, keys[job.competition], false);
-                if (scrapeResult.error) {
-                    console.log(scrapeResult.error);
+                const { data, error } = await getFixturesAndResults(job.url, true, keys[job.competition], false);
+                if (error) {
+                    console.log(error);
                 } else {
-                    console.log(`updated scores for ${job.games.map((gme) => gme).join(' ')}`);
+                    const result = await Fixtures.bulkWrite(
+                        data.map((eachFixture) => ({
+                            updateOne: {
+                                filter: { id: eachFixture.id },
+                                update: eachFixture,
+                                upsert: true,
+                            },
+                        }))
+                    );
+                    if (result) {
+                        console.log({ result });
+                        console.log(`updated scores for ${job.games.map((gme) => gme).join(' ')}`);
+                    }
                 }
             } else {
                 console.log('No matches currently being played');
@@ -222,9 +271,8 @@ const populateTimetableJob = cron.schedule(`5 2 * * *`, async () => {
     }
 });
 
-// mainJob.start();
-// fixturesUpdateJobs.start();
 populateTimetableJob.start();
 fixturesUpdateJobs.start();
 monthlyFixtureUpdate.start();
 hourlyStandingsUpdate.start();
+updateAllPreviousJob.start();

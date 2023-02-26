@@ -10,6 +10,7 @@ const scrapers = require('./routes/scrapers');
 
 console.log('Server current time in UTC ', moment().utc());
 console.log('Server current local offset ', moment().utcOffset());
+console.log('whats this ', moment(`01-07`, 'DD-MM').subtract('year', 1).format('MM-yyyy'));
 
 const { APP_STATUS } = process.env;
 const PORT = process.env.PORT || 8080;

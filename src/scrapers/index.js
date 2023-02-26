@@ -164,7 +164,7 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                             return;
                         }
 
-                        console.log({ fixture });
+                        // console.log({ fixture });
 
                         return { ...fixture };
                     })

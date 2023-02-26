@@ -1,8 +1,8 @@
 const moment = require('moment');
 
-const sleep = async (ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-};
+// const sleep = async (ms) => {
+//     return new Promise((resolve) => setTimeout(resolve, ms));
+// };
 const sortDate = (date) => {};
 
 const keys = {
@@ -12,6 +12,11 @@ const keys = {
     es: 'spanish-la-liga',
     ita: 'italian-serie-a',
     pr: 'portuguese-primeira-liga',
+};
+
+const sleep = (delay) => {
+    const start = new Date().getTime();
+    while (new Date().getTime() < start + delay);
 };
 
 const createScrapeUrl = (competitionShortCode, job, date) => {
