@@ -125,16 +125,8 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                             season: getSeasonYear(),
                             home_team: $(row).find('.sp-c-fixture__team-name-wrap').first().find('span').text(),
                             away_team: $(row).find('.sp-c-fixture__team-name-wrap').last().find('span').text(),
-                            home_team_score:
-                                $(row)
-                                    .find('span.sp-c-fixture__team--home')
-                                    .find('span.sp-c-fixture__number--ft')
-                                    .text() || null,
-                            away_team_score:
-                                $(row)
-                                    .find('span.sp-c-fixture__team--away')
-                                    .find('span.sp-c-fixture__number--ft')
-                                    .text() || null,
+                            home_team_score: $(row).find('span.sp-c-fixture__number--home').text() || null,
+                            away_team_score: $(row).find('span.sp-c-fixture__number--away').text() || null,
                             long_date: blockDate,
                             short_date: shortDate,
                             last_updated: moment.utc(),
@@ -171,6 +163,9 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                         if (hidePostponed && fixture.postponed) {
                             return;
                         }
+
+                        console.log({ fixture });
+
                         return { ...fixture };
                     })
                     .get();
