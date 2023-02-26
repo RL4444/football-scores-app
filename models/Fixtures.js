@@ -13,6 +13,7 @@ const FixtureSchema = new Schema({
     last_updated: { type: Date, required: true, default: new Date() },
     short_date: { type: String, required: true },
     ko_timestamp: { type: Date, required: false },
+    kickoff_time: { type: String, required: false },
     status: { type: String, required: true },
     postponed: { type: Boolean, required: true, default: false },
 });

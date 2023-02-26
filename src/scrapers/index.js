@@ -125,8 +125,8 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                             season: getSeasonYear(),
                             home_team: $(row).find('.sp-c-fixture__team-name-wrap').first().find('span').text(),
                             away_team: $(row).find('.sp-c-fixture__team-name-wrap').last().find('span').text(),
-                            home_team_score: $(row).find('span.sp-c-fixture__number--home').text() || null,
-                            away_team_score: $(row).find('span.sp-c-fixture__number--away').text() || null,
+                            home_team_score: $(row).find('.sp-c-fixture__number--home').text() || null,
+                            away_team_score: $(row).find('.sp-c-fixture__number--away').text() || null,
                             long_date: blockDate,
                             short_date: shortDate,
                             last_updated: moment.utc(),
@@ -148,7 +148,7 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
 
                         // if fixture date > date now() this is a future fixture
                         if (koTimestamp && isTimestamp) {
-                            fixture.kickoffTime = $(row).find('span.sp-c-fixture__number--time').text();
+                            fixture.kickoff_time = $(row).find('span.sp-c-fixture__number--time').text();
 
                             fixture.ko_timestamp = moment
                                 .utc(fixture.short_date + ' ' + koTimestamp, 'DD-MM-yyyy HH:mm')
