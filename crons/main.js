@@ -198,7 +198,7 @@ const fixturesUpdateJobs = cron.schedule(`*/2 10-23 * * *`, async () => {
 
             if (matchHappeningNow) {
                 console.log(job.games.map((gme) => gme).join(' '), 'happening -- scraping scores');
-                const scrapeResult = await getFixturesAndResults(job.url, true, job.competition, false);
+                const scrapeResult = await getFixturesAndResults(job.url, true, keys[job.competition], false);
                 if (scrapeResult.error) {
                     console.log(scrapeResult.error);
                 } else {
