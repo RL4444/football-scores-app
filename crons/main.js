@@ -21,110 +21,106 @@ const monthlyFixtureJob = cron.schedule('1 2 1 * *', async () => {
 const popFunction = async () => {
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
-    // const todaysDate = '04-03-2023';
 
     let updatedJSON = {};
     const errorsFound = [];
+    try {
+        const todaysGames = await Fixtures.find({ short_date: todaysDate });
 
-    if (todaysJobs.lastUpdated !== todaysDate) {
-        try {
-            const todaysGames = await Fixtures.find({ short_date: todaysDate });
+        if (!todaysGames) {
+            errorsFound.push('Could not retrieve from Mongodb');
+            return;
+        }
 
-            if (!todaysGames) {
-                errorsFound.push('Could not retrieve from Mongodb');
-                return;
-            }
+        const jobsUnfiltered = todaysGames.map((game) => {
+            const jobDetails = {
+                from: moment(game.ko_timestamp).utc(),
+                to: moment(game.ko_timestamp).utc().add(2, 'hours'),
+                competition: game.competition_shortcode,
+                url: createScrapeUrl(game.competition_shortcode, 'fixtures', moment().format('yyyy-MM')),
+                games: [],
+                thisGame: game.id,
+            };
 
-            const jobsUnfiltered = todaysGames.map((game) => {
-                const jobDetails = {
-                    from: moment(game.ko_timestamp).utc(),
-                    to: moment(game.ko_timestamp).utc().add(2, 'hours'),
-                    competition: game.competition_shortcode,
-                    url: createScrapeUrl(game.competition_shortcode, 'fixtures', moment().format('yyyy-MM')),
-                    games: [],
-                    thisGame: game.id,
-                };
+            return jobDetails;
+        });
 
-                return jobDetails;
-            });
+        const jobsFiltered = [];
 
-            const jobsFiltered = [];
+        if (jobsUnfiltered.length > 0) {
+            console.log(`filtering duplicates from ${jobsUnfiltered.length} jobs `);
+            jobsUnfiltered.forEach((singleJob, index) => {
+                if (jobsFiltered.length > 0) {
+                    const seen = jobsFiltered.some((filteredJob) => {
+                        const koTimesMatch = JSON.stringify(filteredJob.from) === JSON.stringify(singleJob.from);
+                        const compsMatch = filteredJob.competition === singleJob.competition;
 
-            if (jobsUnfiltered.length > 0) {
-                console.log(`filtering duplicates from ${jobsUnfiltered.length} jobs `);
-                jobsUnfiltered.forEach((singleJob, index) => {
-                    if (jobsFiltered.length > 0) {
-                        const seen = jobsFiltered.some((filteredJob) => {
-                            const koTimesMatch = JSON.stringify(filteredJob.from) === JSON.stringify(singleJob.from);
-                            const compsMatch = filteredJob.competition === singleJob.competition;
-
-                            if (koTimesMatch && compsMatch) {
-                                return true;
-                            }
-                        });
-
-                        if (!seen) {
-                            singleJob.games.push(singleJob.thisGame);
-                            delete singleJob.thisGame;
-                            jobsFiltered.push(singleJob);
-                        } else {
-                            jobsFiltered.forEach((jobWhere, idx) => {
-                                const koTimesMatch = JSON.stringify(jobWhere.from) === JSON.stringify(singleJob.from);
-                                const compsMatch = jobWhere.competition === singleJob.competition;
-
-                                if (koTimesMatch && compsMatch) {
-                                    jobWhere.games.push(singleJob.thisGame);
-                                }
-                            });
+                        if (koTimesMatch && compsMatch) {
+                            return true;
                         }
-                    } else {
+                    });
+
+                    if (!seen) {
                         singleJob.games.push(singleJob.thisGame);
                         delete singleJob.thisGame;
                         jobsFiltered.push(singleJob);
+                    } else {
+                        jobsFiltered.forEach((jobWhere, idx) => {
+                            const koTimesMatch = JSON.stringify(jobWhere.from) === JSON.stringify(singleJob.from);
+                            const compsMatch = jobWhere.competition === singleJob.competition;
+
+                            if (koTimesMatch && compsMatch) {
+                                jobWhere.games.push(singleJob.thisGame);
+                            }
+                        });
                     }
-                });
-                console.log(`left ${jobsFiltered.length}`);
-            }
-
-            updatedJSON = {
-                jobs: jobsFiltered,
-                lastUpdated: todaysDate,
-                timestamp_updated: moment().utc(),
-            };
-
-            fs.writeFileSync(path.join(__dirname, '/jobs.json'), JSON.stringify(updatedJSON));
-        } catch (err) {
-            errorsFound.push(err);
-            console.log('error');
-        } finally {
-            if (errorsFound.length > 0) {
-                console.log('Errors found - Sending error report');
-                const success = await sendMail(
-                    'errorReport',
-                    { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
-                    { errors: errorsFound }
-                );
-
-                if (success) {
-                    console.log('Mail send successfully');
                 } else {
-                    console.log('error sending mail');
+                    singleJob.games.push(singleJob.thisGame);
+                    delete singleJob.thisGame;
+                    jobsFiltered.push(singleJob);
                 }
+            });
+            console.log(`left ${jobsFiltered.length}`);
+        }
+
+        updatedJSON = {
+            jobs: jobsFiltered,
+            lastUpdated: todaysDate,
+            timestamp_updated: moment().utc(),
+        };
+
+        fs.writeFileSync(path.join(__dirname, '/jobs.json'), JSON.stringify(updatedJSON));
+    } catch (err) {
+        errorsFound.push(err);
+        console.log('error');
+    } finally {
+        if (errorsFound.length > 0) {
+            console.log('Errors found - Sending error report');
+            const success = await sendMail(
+                'errorReport',
+                { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
+                { errors: errorsFound }
+            );
+
+            if (success) {
+                console.log('Mail send successfully');
             } else {
-                console.log('Success! Sending todays Schedule');
-                const success = await sendMail(
-                    'scheduleUpdateResult',
-                    { subject: `Schedule for ${moment().utc()}`, from: 'System' },
-                    {
-                        jobs: updatedJSON.jobs,
-                    }
-                );
-
-                if (success) {
-                    console.log('Mail send successfully');
-                } else {
-                    console.log('error sending mail');
+                console.log('error sending mail');
+            }
+        } else {
+            console.log('Success! Sending todays Schedule');
+            const success = await sendMail(
+                'scheduleUpdateResult',
+                { subject: `Schedule for ${moment().utc()}`, from: 'System' },
+                {
+                    jobs: updatedJSON.jobs,
                 }
+            );
+
+            if (success) {
+                console.log('Mail send successfully');
+            } else {
+                console.log('error sending mail');
             }
         }
     }
@@ -163,7 +159,13 @@ const fixturesUpdateJobs = cron.schedule(`*/2 * * * *`, async () => {
 
 const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
     console.log('Starting daily timetable populate cron');
-    await popFunction();
+    const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
+    const todaysDate = moment().format('DD-MM-yyyy');
+    // const todaysDate = '04-03-2023';
+
+    if (todaysJobs.lastUpdated !== todaysDate) {
+        await popFunction();
+    }
 });
 
 // mainJob.start();
