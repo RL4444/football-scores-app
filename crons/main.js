@@ -14,12 +14,12 @@ const hourlyStandingsUpdate = cron.schedule('0 10-23 * * *', async () => {
         const url = createScrapeUrl(competition, 'standings', moment().format('yyyy-MM'));
 
         try {
-            const result = await getStandings(url, competition, false);
+            const result = await getStandings(url, keys[competition], false);
 
             if (result.error) {
-                console.log('error getting standings for ', competition);
+                console.log('error getting standings for ', keys[competition]);
             } else {
-                console.log('Standings updated for ', competition);
+                console.log('Standings updated for ', keys[competition]);
             }
         } catch (error) {
             console.log('error getting standings ', error);
@@ -30,12 +30,12 @@ const hourlyStandingsUpdate = cron.schedule('0 10-23 * * *', async () => {
 const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
     Object.keys(keys).forEach(async (competition) => {
         const url = createScrapeUrl(competition, 'scores-fixtures', moment().format('yyyy-MM'));
-        const result = await getFixturesAndResults(url, true, competition, false);
+        const result = await getFixturesAndResults(url, true, keys[competition], false);
         try {
             if (!result.error) {
                 const success = await sendMail(
                     'monthlyScrapeReport',
-                    { subject: `Monthly fixtures for ${competition}`, from: 'System' },
+                    { subject: `Monthly fixtures for ${keys[competition]}`, from: 'System' },
                     {
                         fixtures: result.data.map((eachFixture) => {
                             return { id: eachFixture.id, date: eachFixture.ko_timestamp };
@@ -52,7 +52,7 @@ const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
                 const success = await sendMail(
                     'errorReport',
                     { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
-                    { errors: [`competition ${competition} did not update for its monthly schedule`] }
+                    { errors: [`competition ${keys[competition]} did not update for its monthly schedule`] }
                 );
 
                 if (success) {
@@ -63,7 +63,7 @@ const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
             const success = await sendMail(
                 'errorReport',
                 { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
-                { errors: [`competition ${competition} did not update for its monthly schedule`] }
+                { errors: [`competition ${keys[competition]} did not update for its monthly schedule`] }
             );
 
             if (success) {
@@ -74,7 +74,6 @@ const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
 });
 
 const popFunction = async () => {
-    const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
 
     let updatedJSON = {};
