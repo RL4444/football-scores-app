@@ -1,0 +1,5 @@
+/node_modules
+/.env
+/sandbox.txt
+/leftoff.txt
+/json_output
