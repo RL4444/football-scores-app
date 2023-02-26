@@ -26,7 +26,13 @@ app.use('/scrape', scrapers);
 
 app.get('/test', (req, res) => {
     console.log('ping');
-    res.end('pong');
+    res.status(200).json({
+        error: false,
+        message: 'Healthy app - phew',
+        serverTime: moment().utc(),
+        serverTimeOffset: moment().utcOffset(),
+        status: 200,
+    });
 });
 
 if (APP_STATUS === 'active') {
