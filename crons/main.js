@@ -43,8 +43,7 @@ const fixturesUpdateJobs = cron.schedule(`*/2 * * * *`, async () => {
     }
 });
 
-// const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
-const populateTimetableJob = cron.schedule(`17 * * * *`, async () => {
+const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
     console.log('Starting daily timetable populate cron');
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
