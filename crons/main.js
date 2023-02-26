@@ -4,16 +4,71 @@ const fs = require('fs');
 const path = require('path');
 
 const { Fixtures } = require('../models/Fixtures');
-const { getFixturesAndResults } = require('../src/scrapers/index');
+const { getFixturesAndResults, getStandings } = require('../src/scrapers/index');
 const { createScrapeUrl, keys } = require('../src/utils');
 
 const { sendMail } = require('../mailer/index');
 
-const monthlyFixtureJob = cron.schedule('1 2 1 * *', async () => {
+const hourlyStandingsUpdate = cron.schedule('0 10-23 * * *', async () => {
+    Object.keys(keys).forEach(async (competition) => {
+        const url = createScrapeUrl(competition, 'standings', moment().format('yyyy-MM'));
+
+        try {
+            const result = await getStandings(url, competition, false);
+
+            if (result.error) {
+                console.log('error getting standings for ', competition);
+            } else {
+                console.log('Standings updated for ', competition);
+            }
+        } catch (error) {
+            console.log('error getting standings ', error);
+        }
+    });
+});
+
+const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
     Object.keys(keys).forEach(async (competition) => {
         const url = createScrapeUrl(competition, 'scores-fixtures', moment().format('yyyy-MM'));
         const result = await getFixturesAndResults(url, true, competition, false);
-        if (!result.error) {
+        try {
+            if (!result.error) {
+                const success = await sendMail(
+                    'monthlyScrapeReport',
+                    { subject: `Monthly fixtures for ${competition}`, from: 'System' },
+                    {
+                        fixtures: result.data.map((eachFixture) => {
+                            return { id: eachFixture.id, date: eachFixture.ko_timestamp };
+                        }),
+                    }
+                );
+
+                if (success) {
+                    console.log('Mail send successfully');
+                } else {
+                    console.log('error sending mail');
+                }
+            } else {
+                const success = await sendMail(
+                    'errorReport',
+                    { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
+                    { errors: [`competition ${competition} did not update for its monthly schedule`] }
+                );
+
+                if (success) {
+                    console.log('Error mail sent');
+                }
+            }
+        } catch (error) {
+            const success = await sendMail(
+                'errorReport',
+                { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
+                { errors: [`competition ${competition} did not update for its monthly schedule`] }
+            );
+
+            if (success) {
+                console.log('Error mail sent');
+            }
         }
     });
 });
@@ -126,7 +181,7 @@ const popFunction = async () => {
     }
 };
 
-const fixturesUpdateJobs = cron.schedule(`*/2 * * * *`, async () => {
+const fixturesUpdateJobs = cron.schedule(`*/2 10-23 * * *`, async () => {
     console.log(`Checking jobs to scrape - Footballs coming home`);
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
@@ -157,7 +212,7 @@ const fixturesUpdateJobs = cron.schedule(`*/2 * * * *`, async () => {
     }
 });
 
-const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
+const populateTimetableJob = cron.schedule(`5 2 * * *`, async () => {
     console.log('Starting daily timetable populate cron');
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
@@ -172,3 +227,5 @@ const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
 // fixturesUpdateJobs.start();
 populateTimetableJob.start();
 fixturesUpdateJobs.start();
+monthlyFixtureUpdate.start();
+hourlyStandingsUpdate.start();

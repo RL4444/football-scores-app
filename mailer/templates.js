@@ -5,8 +5,25 @@ const moment = require('moment');
 // success green #1bce00;
 
 const monthlyScrapeReport = (args) => `
-    <div></div>
-    <h1></h1>
+        <body style='font-family: sans-serif; padding-bottom: 30px;'>
+            <div style='background-color: #fff; color: #000; font-size: 16px; padding: 2em 13m; display: block;'>
+                <div style="padding: 25px; background-color: #1bce00;">
+                        <h1 style='color: #fff;'>Todays Football Schedule ${moment().utc()}</h1>
+                </div>
+                <div style="padding: 25px;">
+                    <h4 style='margin-top: 1em;'>Upcoming monthly fixtures for Competition ${args.competition}</h4>
+                    <ul>
+                    ${args.fixtures
+                        .map((eachFixture, idx) => {
+                            return `
+                            <li key=${idx}><b>${eachFixture.id}</b> - ${eachFixture.date}</li>
+                        `;
+                        })
+                        .join('')}
+                    </ul>
+                </div>
+            </div>
+        </body>
 `;
 
 // Takes array of errors in args : { jobs: []}
