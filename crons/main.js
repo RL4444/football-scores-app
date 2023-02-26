@@ -18,33 +18,7 @@ const monthlyFixtureJob = cron.schedule('1 2 1 * *', async () => {
     });
 });
 
-const fixturesUpdateJobs = cron.schedule(`*/2 * * * *`, async () => {
-    console.log(`Checking jobs to scrape - Footballs coming home`);
-    const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
-    console.log({ todaysJobs });
-    if (todaysJobs.jobs && todaysJobs.jobs.length > 0) {
-        todaysJobs.jobs.forEach(async (job) => {
-            const matchHappeningNow = moment().isAfter(job.from) && moment().isBefore(job.to);
-            console.log('match start time', moment(job.from));
-            console.log('match end time ', moment(job.to));
-
-            if (matchHappeningNow) {
-                console.log(job.games.map((gme) => gme).join(' '), 'happening -- scraping scores');
-                const scrapeResult = await getFixturesAndResults(job.url, true, job.competition, false);
-                if (scrapeResult.error) {
-                    console.log(scrapeResult.error);
-                } else {
-                    console.log(`updated scores for ${job.games.map((gme) => gme).join(' ')}`);
-                }
-            } else {
-                console.log('No matches currently being played');
-            }
-        });
-    }
-});
-
-const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
-    console.log('Starting daily timetable populate cron');
+const popFunction = async () => {
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
     // const todaysDate = '04-03-2023';
@@ -154,6 +128,42 @@ const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
             }
         }
     }
+};
+
+const fixturesUpdateJobs = cron.schedule(`*/2 * * * *`, async () => {
+    console.log(`Checking jobs to scrape - Footballs coming home`);
+    const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
+    const todaysDate = moment().format('DD-MM-yyyy');
+
+    if (todaysJobs.lastUpdated !== todaysDate) {
+        await popFunction();
+    }
+
+    console.log({ todaysJobs });
+    if (todaysJobs.jobs && todaysJobs.jobs.length > 0) {
+        todaysJobs.jobs.forEach(async (job) => {
+            const matchHappeningNow = moment().isAfter(job.from) && moment().isBefore(job.to);
+            console.log('match start time', moment(job.from));
+            console.log('match end time ', moment(job.to));
+
+            if (matchHappeningNow) {
+                console.log(job.games.map((gme) => gme).join(' '), 'happening -- scraping scores');
+                const scrapeResult = await getFixturesAndResults(job.url, true, job.competition, false);
+                if (scrapeResult.error) {
+                    console.log(scrapeResult.error);
+                } else {
+                    console.log(`updated scores for ${job.games.map((gme) => gme).join(' ')}`);
+                }
+            } else {
+                console.log('No matches currently being played');
+            }
+        });
+    }
+});
+
+const populateTimetableJob = cron.schedule(`2 2 * * *`, async () => {
+    console.log('Starting daily timetable populate cron');
+    await popFunction();
 });
 
 // mainJob.start();
