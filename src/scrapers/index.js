@@ -139,7 +139,7 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                             short_date: shortDate,
                             last_updated: moment.utc(),
                             // defaults
-                            ko_timestamp: moment(shortDate + ' 15:00', 'DD-MM-yyyy HH:mm').format(),
+                            // ko_timestamp: moment(shortDate + ' 15:00', 'DD-MM-yyyy HH:mm').format(),
                             status: $(row).find('span.sp-c-fixture__status').text(),
                             postponed: $(row)
                                 .find('span.sp-c-fixture__status')
