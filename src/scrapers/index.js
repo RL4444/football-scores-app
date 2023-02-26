@@ -159,7 +159,7 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                             fixture.kickoffTime = $(row).find('span.sp-c-fixture__number--time').text();
 
                             fixture.ko_timestamp = moment
-                                .utc(fixture.short_date + ' ' + fixture.kickoffTime, 'DD-MM-yyyy HH:mm')
+                                .utc(fixture.short_date + ' ' + koTimestamp, 'DD-MM-yyyy HH:mm')
                                 .format();
                         }
 
