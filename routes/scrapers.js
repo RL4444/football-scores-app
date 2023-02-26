@@ -67,7 +67,7 @@ router.get('/update-fixture-data/:competitionShortCode/:yearMonth', async (req, 
             url,
             true,
             competitionNameKeys[competitionShortCode],
-            true
+            false
         );
 
         if (!error) {
