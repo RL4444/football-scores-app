@@ -46,7 +46,7 @@ const hourlyStandingsUpdate = cron.schedule('0 10-23 * * *', async () => {
     });
 });
 
-const monthlyFixtureUpdate = cron.schedule('1 2 1 * *', async () => {
+const monthlyFixtureUpdate = cron.schedule('1 9 1 * *', async () => {
     Object.keys(keys).forEach(async (competition) => {
         const url = createScrapeUrl(competition, 'fixtures', moment().format('yyyy-MM'));
         const { data, error } = await getFixturesAndResults(url, true, keys[competition], false);
@@ -260,7 +260,7 @@ const fixturesUpdateJobs = cron.schedule(`*/2 10-23 * * *`, async () => {
     }
 });
 
-const populateTimetableJob = cron.schedule(`5 2 * * *`, async () => {
+const populateTimetableJob = cron.schedule(`5 9 * * *`, async () => {
     console.log('Starting daily timetable populate cron');
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
