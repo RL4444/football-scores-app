@@ -12,6 +12,14 @@ const { updateAllCompetitionGames } = require('./updateAll');
 const { sendMail } = require('../mailer/index');
 
 const hourlyStandingsUpdate = cron.schedule('0 10-23 * * *', async () => {
+    const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
+    const todaysDate = moment().format('DD-MM-yyyy');
+
+    if (todaysJobs.lastUpdated !== todaysDate && todaysJobs.jobs.length === 0) {
+        console.log('no standings changes to update');
+        return;
+    }
+
     Object.keys(keys).forEach(async (competition) => {
         const url = createScrapeUrl(competition, 'standings', moment().format('yyyy-MM'));
 
@@ -101,7 +109,7 @@ const monthlyFixtureUpdate = cron.schedule('1 9 1 * *', async () => {
     });
 });
 
-const updateAllPreviousJob = cron.schedule('38 20 * * *', async () => {
+const updateAllPreviousJob = cron.schedule('15 9 * * *', async () => {
     try {
         console.log('starting updated all -- fingers crossed');
         const result = await updateAllCompetitionGames();
@@ -113,7 +121,7 @@ const updateAllPreviousJob = cron.schedule('38 20 * * *', async () => {
     }
 });
 
-const popFunction = async () => {
+const populateJobsList = async () => {
     const todaysDate = moment().format('DD-MM-yyyy');
 
     let updatedJSON = {};
@@ -226,7 +234,7 @@ const fixturesUpdateJobs = cron.schedule(`*/2 10-23 * * *`, async () => {
     const todaysDate = moment().format('DD-MM-yyyy');
 
     if (todaysJobs.lastUpdated !== todaysDate) {
-        await popFunction();
+        await populateJobsList();
     }
 
     if (todaysJobs.jobs && todaysJobs.jobs.length > 0) {
@@ -267,7 +275,7 @@ const populateTimetableJob = cron.schedule(`5 9 * * *`, async () => {
     // const todaysDate = '04-03-2023';
 
     if (todaysJobs.lastUpdated !== todaysDate) {
-        await popFunction();
+        await populateJobsList();
     }
 });
 
