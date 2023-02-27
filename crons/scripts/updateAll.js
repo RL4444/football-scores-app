@@ -1,8 +1,8 @@
 const moment = require('moment');
 
-const { Fixtures } = require('../models/Fixtures');
-const { getFixturesAndResults } = require('../src/scrapers/index');
-const { getSeasonYear, createScrapeUrl, keys, sleep } = require('../src/utils');
+const { Fixtures } = require('../../models/Fixtures');
+const { getFixturesAndResults } = require('../../src/scrapers/index');
+const { getSeasonYear, createScrapeUrl, keys, sleep } = require('../../src/utils');
 
 const updateAllCompetitionGames = async (competitionId = null, minMonth = null) => {
     const seasonYearSplit = getSeasonYear().split('/');
@@ -11,6 +11,7 @@ const updateAllCompetitionGames = async (competitionId = null, minMonth = null) 
     let CURRENT_TIME = moment();
     let MIN_TIME;
 
+    // find out if how far we should go back depending on the 20xx/20xx format for league seasons
     if (minMonth) {
         if (thisYear === seasonYearSplit[0]) {
             MIN_TIME = moment(`01-${minMonth}`, 'DD-MM');
@@ -24,9 +25,6 @@ const updateAllCompetitionGames = async (competitionId = null, minMonth = null) 
             MIN_TIME = moment(`01-08`, 'DD-MM').subtract(1, 'year');
         }
     }
-
-    console.log({ MIN_TIME });
-    console.log({ CURRENT_TIME });
 
     while (moment(CURRENT_TIME, '').isAfter(MIN_TIME)) {
         Object.keys(keys).forEach(async (competition) => {
@@ -53,7 +51,6 @@ const updateAllCompetitionGames = async (competitionId = null, minMonth = null) 
             await sleep(3000);
         });
         CURRENT_TIME = moment(CURRENT_TIME).subtract(1, 'month');
-        console.log(CURRENT_TIME);
     }
 
     return {
