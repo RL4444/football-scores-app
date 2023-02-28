@@ -17,7 +17,7 @@ const fixturesUpdateJob = cron.schedule('1 9 * * *', async () => {
     await fixturesUpdate();
 });
 
-const updateAllPreviousJob = cron.schedule('15 9 1 * *', async () => {
+const updateAllPreviousJob = cron.schedule('4 9 * * *', async () => {
     try {
         console.log('starting updated all -- fingers crossed');
         const result = await updateAllCompetitionGames();
