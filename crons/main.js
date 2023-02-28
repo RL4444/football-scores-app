@@ -14,10 +14,11 @@ const standingsUpdateJob = cron.schedule('*/10 10-23 * * *', async () => {
 });
 
 const fixturesUpdateJob = cron.schedule('1 9 * * *', async () => {
+    console.log('updating fixtures');
     await fixturesUpdate();
 });
 
-const updateAllPreviousJob = cron.schedule('4 9 * * *', async () => {
+const updateAllPreviousJob = cron.schedule('20 9 1 * *', async () => {
     try {
         console.log('starting updated all -- fingers crossed');
         const result = await updateAllCompetitionGames();
@@ -34,7 +35,7 @@ const todaysFixtureUpdateJob = cron.schedule(`*/2 10-23 * * *`, async () => {
     await todaysFixtureUpdate();
 });
 
-const populateTimetableJob = cron.schedule(`5 9 * * *`, async () => {
+const populateTimetableJob = cron.schedule(`50 9 * * *`, async () => {
     console.log('Starting daily timetable populate cron');
     const todaysJobs = JSON.parse(fs.readFileSync(path.join(__dirname, '/jobs.json')));
     const todaysDate = moment().format('DD-MM-yyyy');
