@@ -32,43 +32,52 @@ const job = async () => {
             return jobDetails;
         });
 
+        if (!jobsUnfiltered || jobsUnfiltered.length === 0) {
+            console.log('no jobs todays to populate list with');
+            return;
+        }
+
         const jobsFiltered = [];
 
-        if (jobsUnfiltered.length > 0) {
-            console.log(`filtering duplicates from ${jobsUnfiltered.length} jobs `);
-            jobsUnfiltered.forEach((singleJob, index) => {
-                if (jobsFiltered.length > 0) {
-                    const seen = jobsFiltered.some((filteredJob) => {
-                        const koTimesMatch = JSON.stringify(filteredJob.from) === JSON.stringify(singleJob.from);
-                        const compsMatch = filteredJob.competition === singleJob.competition;
+        console.log(`filtering duplicates from ${jobsUnfiltered.length} jobs `);
+        jobsUnfiltered.forEach((singleJob, index) => {
+            // this must be unique as the list is empty
+            if (jobsFiltered.length === 0) {
+                singleJob.games.push(singleJob.thisGame);
+                delete singleJob.thisGame;
+                jobsFiltered.push(singleJob);
+                return;
+            }
 
-                        if (koTimesMatch && compsMatch) {
-                            return true;
-                        }
-                    });
+            // if the KO times match and the same league match then we only 1 scrape call rather than x
+            const seen =
+                jobsFiltered &&
+                jobsFiltered.some((filteredJob) => {
+                    const koTimesMatch = JSON.stringify(filteredJob.from) === JSON.stringify(singleJob.from);
+                    const compsMatch = filteredJob.competition === singleJob.competition;
 
-                    if (!seen) {
-                        singleJob.games.push(singleJob.thisGame);
-                        delete singleJob.thisGame;
-                        jobsFiltered.push(singleJob);
-                    } else {
-                        jobsFiltered.forEach((jobWhere, idx) => {
-                            const koTimesMatch = JSON.stringify(jobWhere.from) === JSON.stringify(singleJob.from);
-                            const compsMatch = jobWhere.competition === singleJob.competition;
-
-                            if (koTimesMatch && compsMatch) {
-                                jobWhere.games.push(singleJob.thisGame);
-                            }
-                        });
+                    if (koTimesMatch && compsMatch) {
+                        return true;
                     }
-                } else {
-                    singleJob.games.push(singleJob.thisGame);
-                    delete singleJob.thisGame;
-                    jobsFiltered.push(singleJob);
-                }
-            });
-            console.log(`left ${jobsFiltered.length}`);
-        }
+                });
+
+            if (!seen) {
+                singleJob.games.push(singleJob.thisGame);
+                delete singleJob.thisGame;
+                jobsFiltered.push(singleJob);
+            } else {
+                jobsFiltered.forEach((jobWhere, idx) => {
+                    const koTimesMatch = JSON.stringify(jobWhere.from) === JSON.stringify(singleJob.from);
+                    const compsMatch = jobWhere.competition === singleJob.competition;
+
+                    if (koTimesMatch && compsMatch) {
+                        jobWhere.games.push(singleJob.thisGame);
+                    }
+                });
+            }
+        });
+
+        console.log(`left ${jobsFiltered.length}`);
 
         updatedJSON = {
             jobs: jobsFiltered,

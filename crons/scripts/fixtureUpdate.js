@@ -11,7 +11,7 @@ const job = async () => {
         const url = createScrapeUrl(competition, 'fixtures', moment().format('yyyy-MM'));
         const { data, error } = await getFixturesAndResults(url, true, keys[competition], false);
         if (error) {
-            console.log(`error scraping ${competition} scores in scraper`, error);
+            console.error(`error scraping ${competition} scores in scraper`, error);
             const mailSuccess = await sendMail(
                 'errorReport',
                 { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
@@ -20,7 +20,7 @@ const job = async () => {
             if (mailSuccess) {
                 console.log('Mail success - Sent error report');
             } else {
-                console.log('Sending error report failed');
+                console.error('Sending error report failed');
             }
             return;
         }

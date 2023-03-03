@@ -24,23 +24,25 @@ const hourlyStandingsUpdate = async () => {
 
             if (error) {
                 console.log('error getting standings for ', keys[competition]);
-            } else {
-                const result = await Standings.findOneAndUpdate(
-                    {
-                        id: `${competition}_${getSeasonYear()}`,
-                    },
-                    {
-                        competition: keys[competition],
-                        season: getSeasonYear(),
-                        lastUpdated: new Date(),
-                        standings: data,
-                    },
-                    { upsert: true, useFindAndModify: false }
-                );
-                if (result) {
-                    console.log('result from standings db insert ', { result });
-                    console.log('standings insert result from mongo for ', keys[competition]);
-                }
+                throw new Error('error getting standings for ', keys[competition]);
+            }
+
+            const result = await Standings.findOneAndUpdate(
+                {
+                    id: `${competition}_${getSeasonYear()}`,
+                },
+                {
+                    competition: keys[competition],
+                    season: getSeasonYear(),
+                    lastUpdated: new Date(),
+                    standings: data,
+                },
+                { upsert: true, useFindAndModify: false }
+            );
+
+            if (result) {
+                console.log('result from standings db insert ', { result });
+                console.log('standings insert result from mongo for ', keys[competition]);
             }
         } catch (error) {
             console.log('error getting standings ', error);
