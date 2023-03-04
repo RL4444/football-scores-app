@@ -36,7 +36,7 @@ async function getStandings(url, competition, createJSONLocal = false) {
                 } else {
                     return {
                         position: $(tableRow).find('td').eq(0).text(),
-                        teamName: $(tableRow).find('td').eq(2).text(),
+                        teamName: $(tableRow).find('td').eq(2).find('abbr').attr('title'),
                         points: $(tableRow).find('td').eq(10).text(),
                         form: $(tableRow)
                             .find('td')
@@ -163,8 +163,6 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                         if (hidePostponed && fixture.postponed) {
                             return;
                         }
-
-                        // console.log({ fixture });
 
                         return { ...fixture };
                     })
