@@ -96,7 +96,7 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                     .map((idx, row) => {
                         // find each fixture that day
                         let day = blockDate.match(/\d+/).join('');
-                        if (day && Number(day) < 10) {
+                        if (day && Number(day) < 10 && day.length === 1) {
                             day = `0` + blockDate.match(/\d+/).join('');
                         }
 
