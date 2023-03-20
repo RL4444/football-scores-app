@@ -4,13 +4,13 @@ const fs = require('fs');
 const path = require('path');
 
 const { updateAllCompetitionGames } = require('./scripts/updateAll');
-const hourlyStandingsUpdate = require('./scripts/hourlyStandingsUpdate');
+const updateStandings = require('./scripts/updateStandings');
 const fixturesUpdate = require('./scripts/fixtureUpdate');
 const populateJobsList = require('./scripts/populateJobsList');
-const todaysFixtureUpdate = require('./scripts/todaysFixturesUpdate');
+const dailyFixturesUpdate = require('./scripts/dailyFixturesUpdate');
 
 const standingsUpdateJob = cron.schedule('*/10 10-23 * * *', async () => {
-    await hourlyStandingsUpdate();
+    await updateStandings();
 });
 
 const fixturesUpdateJob = cron.schedule('1 9 * * *', async () => {
@@ -30,9 +30,9 @@ const updateAllPreviousJob = cron.schedule('20 9 1 * *', async () => {
     }
 });
 
-const todaysFixtureUpdateJob = cron.schedule(`*/2 10-23 * * *`, async () => {
+const dailyFixturesUpdateJob = cron.schedule(`*/2 10-23 * * *`, async () => {
     console.log(`Checking jobs to scrape - Footballs coming home`);
-    await todaysFixtureUpdate();
+    await dailyFixturesUpdate();
 });
 
 const populateTimetableJob = cron.schedule(`50 9 * * *`, async () => {
@@ -47,7 +47,7 @@ const populateTimetableJob = cron.schedule(`50 9 * * *`, async () => {
 });
 
 populateTimetableJob.start();
-todaysFixtureUpdateJob.start();
+dailyFixturesUpdateJob.start();
 fixturesUpdateJob.start();
 updateAllPreviousJob.start();
 standingsUpdateJob.start();

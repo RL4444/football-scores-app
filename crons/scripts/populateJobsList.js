@@ -90,6 +90,12 @@ const job = async () => {
         errorsFound.push(err);
         console.log('error');
     } finally {
+        console.log({ updatedJSON });
+        if (!updatedJSON.jobs) {
+            console.log('no jobs -- skipping email update');
+            return;
+        }
+
         if (errorsFound.length > 0) {
             console.log('Errors found - Sending error report');
             const success = await sendMail(

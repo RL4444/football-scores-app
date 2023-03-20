@@ -28,7 +28,7 @@ const job = async () => {
         }
 
         console.log(job.games.map((gme) => gme).join(' '), 'happening -- scraping scores');
-        const { data, error } = await getFixturesAndResults(job.url, true, keys[job.competition], false);
+        const { data, error } = await getFixturesAndResults(job.url, true, keys[job.competition].league, false);
         if (error) {
             console.log('Error scraping during live score job: ', error);
             return;

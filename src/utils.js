@@ -1,23 +1,23 @@
 const moment = require('moment');
 
-// const sleep = async (ms) => {
-//     return new Promise((resolve) => setTimeout(resolve, ms));
-// };
+const sleep = async (ms) => {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+};
 const sortDate = (date) => {};
 
 const keys = {
-    en: 'premier-league',
-    fr: 'french-ligue-one',
-    de: 'german-bundesliga',
-    es: 'spanish-la-liga',
-    ita: 'italian-serie-a',
-    pr: 'portuguese-primeira-liga',
+    en: { league: 'premier-league', wikiLeagueKey: 'Premier_League', cup: '' },
+    fr: { league: 'french-ligue-one', wikiLeagueKey: 'Ligue_1', cup: '' },
+    de: { league: 'german-bundesliga', wikiLeagueKey: 'Bundesliga', cup: '' },
+    es: { league: 'spanish-la-liga', wikiLeagueKey: 'La_Liga', cup: '' },
+    ita: { league: 'italian-serie-a', wikiLeagueKey: 'Serie_A', cup: '' },
+    pr: { league: 'portuguese-primeira-liga', wikiLeagueKey: 'Primeira_Liga', cup: '' },
 };
 
-const sleep = (delay) => {
-    const start = new Date().getTime();
-    while (new Date().getTime() < start + delay);
-};
+// const sleep = (delay) => {
+//     const start = new Date().getTime();
+//     while (new Date().getTime() < start + delay);
+// };
 
 const createScrapeUrl = (competitionShortCode, job, date) => {
     // DATE = yyyy-MM format
@@ -28,10 +28,10 @@ const createScrapeUrl = (competitionShortCode, job, date) => {
     };
 
     if (job === 'standings') {
-        return `https://www.bbc.com/sport/football/${keys[competitionShortCode]}/${jobs[job]}/`;
+        return `https://www.bbc.com/sport/football/${keys[competitionShortCode].league}/${jobs[job]}/`;
     }
 
-    return `https://www.bbc.com/sport/football/${keys[competitionShortCode]}/${jobs[job]}/${date}?filter=results`;
+    return `https://www.bbc.com/sport/football/${keys[competitionShortCode].league}/${jobs[job]}/${date}?filter=results`;
 };
 
 const getSeasonYear = () => {
@@ -45,7 +45,7 @@ const getSeasonYear = () => {
 };
 
 const getCompetitionShortCode = (competitionLongCode) => {
-    return Object.keys(keys).find((key) => keys[key] === competitionLongCode);
+    return Object.keys(keys).find((key) => keys[key].league === competitionLongCode);
 };
 
 module.exports = {

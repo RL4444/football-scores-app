@@ -13,7 +13,7 @@ mongoose.connect = mongoose.connect(DATABASE_URL, { useNewUrlParser: true, useUn
 // CONNECTION EVENTS
 mongoose.connection
     .on('open', () => log.green('DATABASE STATE', 'Connection Open'))
-    .on('close', () => log.magenta('DATABASE STATE', 'Connection Open'))
+    .on('close', () => log.magenta('DATABASE STATE', 'Connection Closed'))
     .on('error', (error) => log.red('DATABASE STATE', error));
 
 // EXPORT CONNECTION

@@ -3,3 +3,5 @@
 /sandbox.txt
 /leftoff.txt
 /json_output
+/src/scrapers/errors
+/src/scrapers/jsonOutput

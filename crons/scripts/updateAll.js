@@ -29,7 +29,7 @@ const updateAllCompetitionGames = async (competitionId = null, minMonth = null) 
     while (moment(CURRENT_TIME, '').isAfter(MIN_TIME)) {
         Object.keys(keys).forEach(async (competition) => {
             const url = createScrapeUrl(competition, 'fixtures', moment(CURRENT_TIME).format('yyyy-MM'));
-            const { data, error } = await getFixturesAndResults(url, true, keys[competition], false);
+            const { data, error } = await getFixturesAndResults(url, true, keys[competition].league, false);
 
             if (error) {
                 console.log('error ', error);
@@ -45,7 +45,7 @@ const updateAllCompetitionGames = async (competitionId = null, minMonth = null) 
                 );
                 if (result) {
                     console.log({ result });
-                    console.log(`Successfully updated month ${CURRENT_TIME} for ${keys[competition]}`);
+                    console.log(`Successfully updated month ${CURRENT_TIME} for ${keys[competition].league}`);
                 }
             }
             await sleep(3000);

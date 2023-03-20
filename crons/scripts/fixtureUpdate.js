@@ -9,13 +9,13 @@ const { sendMail } = require('../../mailer/index');
 const job = async () => {
     Object.keys(keys).forEach(async (competition) => {
         const url = createScrapeUrl(competition, 'fixtures', moment().format('yyyy-MM'));
-        const { data, error } = await getFixturesAndResults(url, true, keys[competition], false);
+        const { data, error } = await getFixturesAndResults(url, true, keys[competition].league, false);
         if (error) {
             console.error(`error scraping ${competition} scores in scraper`, error);
             const mailSuccess = await sendMail(
                 'errorReport',
                 { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
-                { errors: [`competition ${keys[competition]} did not update for its monthly schedule`] }
+                { errors: [`competition ${keys[competition].league} did not update for its monthly schedule`] }
             );
             if (mailSuccess) {
                 console.log('Mail success - Sent error report');
@@ -26,7 +26,7 @@ const job = async () => {
         }
 
         if (data && data.length === 0) {
-            console.log(`no games for ${comp} -- not persisting to db`);
+            console.log(`no games for ${competition} -- not persisting to db`);
             return;
         }
 
@@ -41,16 +41,16 @@ const job = async () => {
         );
 
         if (result) {
-            console.log(`Successfully updated ${competition} scores in scraper & db`, error);
+            console.log(`Successfully updated ${keys[competition].league} scores in scraper & db`, error);
             console.log(`updated scores for ${data.map((gme) => gme).join(' ')}`);
             const success = await sendMail(
                 'monthlyScrapeReport',
-                { subject: `Fixtures for ${keys[competition]}`, from: 'System' },
+                { subject: `Fixtures for ${keys[competition].league}`, from: 'System' },
                 {
                     fixtures: data.map((eachFixture) => {
                         return { id: eachFixture.id, date: eachFixture.short_date };
                     }),
-                    competition,
+                    competition: keys[competition].league,
                 }
             );
 
@@ -63,7 +63,7 @@ const job = async () => {
             const success = await sendMail(
                 'errorReport',
                 { subject: `Error in job writing ${moment().utc()}`, from: 'System' },
-                { errors: [`competition ${keys[competition]} did not update for its monthly schedule`] }
+                { errors: [`competition ${keys[competition].league} did not update for its monthly schedule`] }
             );
 
             if (success) {
