@@ -111,10 +111,8 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
 
                         console.log("raw fixture row", $(row).text());
                         const fixture = {
-                            id: `${
-                                homeTeamName.includes(" ") ? homeTeamName.toLowerCase().replaceAll(" ", "") : homeTeamName.toLowerCase()
-                            }_${
-                                awayTeamName.includes(" ") ? awayTeamName.toLowerCase().replaceAll(" ", "") : awayTeamName.toLowerCase()
+                            id: `${homeTeamName.includes(" ") ? homeTeamName.toLowerCase().replace(" ", "") : homeTeamName.toLowerCase()}_${
+                                awayTeamName.includes(" ") ? awayTeamName.toLowerCase().replace(" ", "") : awayTeamName.toLowerCase()
                             }_${competition}`,
                             competition: competition,
                             competition_shortcode: getCompetitionShortCode(competition),
