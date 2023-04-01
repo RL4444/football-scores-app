@@ -66,6 +66,26 @@ router.get("/check-standings/:competitionShortCode/", async (req, res) => {
     }
 });
 
+router.get("/todays-jobs/", (req, res) => {
+    const jobs = require("../crons/jobs.json");
+
+    if (jobs.jobs && jobs.jobs.length > 0) {
+        res.status(200).json({
+            error: false,
+            success: true,
+            status: 200,
+            data: jobs,
+        });
+    } else {
+        res.status(404).json({
+            error: false,
+            success: true,
+            status: 200,
+            data: jobs,
+        });
+    }
+});
+
 router.get(
     "/update-fixture-data/:competitionShortCode/:yearMonth",
     async (req, res) => {

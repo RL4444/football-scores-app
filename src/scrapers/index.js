@@ -23,9 +23,7 @@ async function getStandings(url, competition, createJSONLocal = false) {
                             .find("td")
                             .eq(10)
                             .find("ul > li")
-                            .map((formIndex, formItem) =>
-                                $(formItem).find("div > div").text()
-                            )
+                            .map((formIndex, formItem) => $(formItem).find("div > div").text())
                             .get(),
                         played: $(tableRow).find("td").eq(2).text(),
                         won: $(tableRow).find("td").eq(3).text(),
@@ -38,19 +36,13 @@ async function getStandings(url, competition, createJSONLocal = false) {
                 } else {
                     return {
                         position: $(tableRow).find("td").eq(0).text(),
-                        teamName: $(tableRow)
-                            .find("td")
-                            .eq(2)
-                            .find("abbr")
-                            .attr("title"),
+                        teamName: $(tableRow).find("td").eq(2).find("abbr").attr("title"),
                         points: $(tableRow).find("td").eq(10).text(),
                         form: $(tableRow)
                             .find("td")
                             .eq(11)
                             .find("span.sp-c-team-form")
-                            .map((formIndex, formItem) =>
-                                $(formItem).find("span").first().text()
-                            )
+                            .map((formIndex, formItem) => $(formItem).find("span").first().text())
                             .get(),
                         played: $(tableRow).find("td").eq(3).text(),
                         won: $(tableRow).find("td").eq(4).text(),
@@ -66,10 +58,7 @@ async function getStandings(url, competition, createJSONLocal = false) {
         if (createJSONLocal) {
             const outputJsonData = { data: standings };
             const filePath = `${competition}.json`;
-            fs.writeFileSync(
-                "./json_output/standings/" + filePath,
-                JSON.stringify(outputJsonData)
-            );
+            fs.writeFileSync("./json_output/standings/" + filePath, JSON.stringify(outputJsonData));
         }
         return { data: standings, error: false };
     } catch (error) {
@@ -77,12 +66,7 @@ async function getStandings(url, competition, createJSONLocal = false) {
     }
 }
 
-async function getFixturesAndResults(
-    url,
-    hidePostponed = true,
-    competition,
-    createJSONLocal = false
-) {
+async function getFixturesAndResults(url, hidePostponed = true, competition, createJSONLocal = false) {
     try {
         console.log({ url });
         const html = await request.get(url);
@@ -116,89 +100,45 @@ async function getFixturesAndResults(
                             day = `0` + blockDate.match(/\d+/).join("");
                         }
 
-                        const koTimestamp = $(row)
-                            .find("span.sp-c-fixture__block")
-                            .text();
+                        const koTimestamp = $(row).find("span.sp-c-fixture__block").text();
                         // timestamp regex matcher so we can check and add to ko_timestamp
-                        const isTimestamp = /^([01]\d|2[0-3]):?([0-5]\d)$/.test(
-                            koTimestamp
-                        );
-
+                        const isTimestamp = /^([01]\d|2[0-3]):?([0-5]\d)$/.test(koTimestamp);
                         const shortDate = day + "-" + sortedMonthYear;
-                        console.log("fixture ", $(row).text());
+
+                        const homeTeamName = $(row).find(".sp-c-fixture__team-name-wrap").first().find("span").text();
+                        const awayTeamName = $(row).find(".sp-c-fixture__team-name-wrap").last().find("span").text();
+                        console.log(`${homeTeamName} vs ${awayTeamName}`);
+
+                        console.log("raw fixture row", $(row).text());
                         const fixture = {
-                            id: `${$(row)
-                                .find(".sp-c-fixture__team-name-wrap")
-                                .first()
-                                .find("span")
-                                .text()
-                                .replaceAll(" ", "")
-                                .toLowerCase()}_${$(row)
-                                .find(".sp-c-fixture__team-name-wrap")
-                                .last()
-                                .find("span")
-                                .text()
-                                .replaceAll(" ", "")
-                                .toLowerCase()}_${competition}`,
+                            id: `${homeTeamName.toLowerCase().replaceAll(" ", "")}_${awayTeamName
+                                .toLowerCase()
+                                .replaceAll(" ", "")}_${competition}`,
                             competition: competition,
-                            competition_shortcode:
-                                getCompetitionShortCode(competition),
+                            competition_shortcode: getCompetitionShortCode(competition),
                             season: getSeasonYear(),
-                            home_team: $(row)
-                                .find(".sp-c-fixture__team-name-wrap")
-                                .first()
-                                .find("span")
-                                .text(),
-                            away_team: $(row)
-                                .find(".sp-c-fixture__team-name-wrap")
-                                .last()
-                                .find("span")
-                                .text(),
-                            home_team_score:
-                                $(row)
-                                    .find(".sp-c-fixture__number--home")
-                                    .text() || null,
-                            away_team_score:
-                                $(row)
-                                    .find(".sp-c-fixture__number--away")
-                                    .text() || null,
+                            home_team: homeTeamName,
+                            away_team: awayTeamName,
+                            home_team_score: $(row).find(".sp-c-fixture__number--home").text() || null,
+                            away_team_score: $(row).find(".sp-c-fixture__number--away").text() || null,
                             long_date: blockDate,
                             short_date: shortDate,
                             last_updated: moment.utc(),
                             // defaults
                             // ko_timestamp: moment(shortDate + ' 15:00', 'DD-MM-yyyy HH:mm').format(),
-                            status: $(row)
-                                .find("span.sp-c-fixture__status")
-                                .text(),
-                            postponed: $(row)
-                                .find("span.sp-c-fixture__status")
-                                .text()
-                                ?.toLowerCase()
-                                .includes("postponed")
-                                ? true
-                                : false,
+                            status: $(row).find("span.sp-c-fixture__status").text(),
+                            postponed: $(row).find("span.sp-c-fixture__status").text()?.toLowerCase().includes("postponed") ? true : false,
                         };
 
-                        if (
-                            !fixture.home_team_score &&
-                            !fixture.away_team_score &&
-                            !fixture.postponed
-                        ) {
+                        if (!fixture.home_team_score && !fixture.away_team_score && !fixture.postponed) {
                             fixture.status === "TBP"; // to be played
                         }
 
                         // if fixture date > date now() this is a future fixture
                         if (koTimestamp && isTimestamp) {
-                            fixture.kickoff_time = $(row)
-                                .find("span.sp-c-fixture__number--time")
-                                .text();
+                            fixture.kickoff_time = $(row).find("span.sp-c-fixture__number--time").text();
 
-                            fixture.ko_timestamp = moment
-                                .utc(
-                                    fixture.short_date + " " + koTimestamp,
-                                    "DD-MM-yyyy HH:mm"
-                                )
-                                .format();
+                            fixture.ko_timestamp = moment.utc(fixture.short_date + " " + koTimestamp, "DD-MM-yyyy HH:mm").format();
                         }
 
                         // create list of postponed fixtures
@@ -221,10 +161,7 @@ async function getFixturesAndResults(
         if (createJSONLocal) {
             const outputJsonData = { data: fixtures };
             const filePath = `${competition}_${sortedMonthYear}.json`;
-            fs.writeFileSync(
-                "./json_output/fixtures-results/" + filePath,
-                JSON.stringify(outputJsonData)
-            );
+            fs.writeFileSync("./json_output/fixtures-results/" + filePath, JSON.stringify(outputJsonData));
         }
 
         return {
