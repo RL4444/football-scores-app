@@ -105,15 +105,17 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                         const isTimestamp = /^([01]\d|2[0-3]):?([0-5]\d)$/.test(koTimestamp);
                         const shortDate = day + "-" + sortedMonthYear;
 
-                        const homeTeamName = $(row).find(".sp-c-fixture__team-name-wrap").first().find("span").text();
-                        const awayTeamName = $(row).find(".sp-c-fixture__team-name-wrap").last().find("span").text();
+                        const homeTeamName = $(row).find(".sp-c-fixture__team-name-wrap").first().find("span").text().trim();
+                        const awayTeamName = $(row).find(".sp-c-fixture__team-name-wrap").last().find("span").text().trim();
                         console.log(`${homeTeamName} vs ${awayTeamName}`);
 
                         console.log("raw fixture row", $(row).text());
                         const fixture = {
-                            id: `${homeTeamName.toLowerCase().replaceAll(" ", "")}_${awayTeamName
-                                .toLowerCase()
-                                .replaceAll(" ", "")}_${competition}`,
+                            id: `${
+                                homeTeamName.includes(" ") ? homeTeamName.toLowerCase().replaceAll(" ", "") : homeTeamName.toLowerCase()
+                            }_${
+                                awayTeamName.includes(" ") ? awayTeamName.toLowerCase().replaceAll(" ", "") : awayTeamName.toLowerCase()
+                            }_${competition}`,
                             competition: competition,
                             competition_shortcode: getCompetitionShortCode(competition),
                             season: getSeasonYear(),
