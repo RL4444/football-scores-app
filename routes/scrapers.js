@@ -80,7 +80,7 @@ router.get(
                 await scraper.getFixturesAndResults(
                     url,
                     true,
-                    competitionNameKeys[competitionShortCode],
+                    competitionNameKeys[competitionShortCode].league,
                     false
                 );
 

@@ -54,7 +54,8 @@ const getSeasonYear = () => {
 
 const getCompetitionShortCode = (competitionLongCode) => {
     return Object.keys(keys).find((key) => {
-        keys[key].league === competitionLongCode;
+        if (keys[key].league === competitionLongCode) return true;
+        else return false;
     });
 };
 

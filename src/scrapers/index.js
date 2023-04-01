@@ -140,10 +140,9 @@ async function getFixturesAndResults(
                                 .text()
                                 .replaceAll(" ", "")
                                 .toLowerCase()}_${competition}`,
-                            competition: competition.league,
-                            competition_shortcode: getCompetitionShortCode(
-                                competition.league
-                            ),
+                            competition: competition,
+                            competition_shortcode:
+                                getCompetitionShortCode(competition),
                             season: getSeasonYear(),
                             home_team: $(row)
                                 .find(".sp-c-fixture__team-name-wrap")
