@@ -6,6 +6,8 @@ async function deleteBadIds() {
         id: { $regex: /(.*)?object?/ },
     });
     console.log({ res });
+
+    return;
 }
 
 deleteBadIds();
