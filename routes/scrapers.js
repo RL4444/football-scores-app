@@ -4,11 +4,7 @@ const router = Router();
 const Standings = require("../models/Standings");
 const { Fixtures } = require("../models/Fixtures");
 const scraper = require("../src/scrapers/index");
-const {
-    createScrapeUrl,
-    keys: competitionNameKeys,
-    getSeasonYear,
-} = require("../src/utils");
+const { createScrapeUrl, keys: competitionNameKeys, getSeasonYear } = require("../src/utils");
 
 router.get("/health/", async (req, res) => {
     res.send({
@@ -21,11 +17,7 @@ router.get("/check-standings/:competitionShortCode/", async (req, res) => {
     const { competitionShortCode } = req.params;
 
     const url = createScrapeUrl(competitionShortCode, "standings", null);
-    const { data, error = null } = await scraper.getStandings(
-        url,
-        competitionNameKeys[competitionShortCode].league,
-        true
-    );
+    const { data, error = null } = await scraper.getStandings(url, competitionNameKeys[competitionShortCode].league, true);
 
     if (error) {
         res.status(500).json({
@@ -40,7 +32,7 @@ router.get("/check-standings/:competitionShortCode/", async (req, res) => {
                 id: `${competitionShortCode}_${getSeasonYear()}`,
             },
             {
-                competition: competitionNameKeys[competitionShortCode],
+                competition: competitionNameKeys[competitionShortCode].league,
                 season: getSeasonYear(),
                 lastUpdated: new Date(),
                 standings: data,
@@ -52,7 +44,7 @@ router.get("/check-standings/:competitionShortCode/", async (req, res) => {
             res.status(200).json({
                 status: 200,
                 error: false,
-                message: `updated standings for ${competitionNameKeys[competitionShortCode]} successfully`,
+                message: `updated standings for ${competitionNameKeys[competitionShortCode].league} successfully`,
                 data: null,
             });
         }
@@ -86,60 +78,52 @@ router.get("/todays-jobs/", (req, res) => {
     }
 });
 
-router.get(
-    "/update-fixture-data/:competitionShortCode/:yearMonth",
-    async (req, res) => {
-        const { competitionShortCode, yearMonth } = req.params; // yearMonth YYYY-mm format
-        const url = createScrapeUrl(
-            competitionShortCode,
-            "fixtures",
-            yearMonth
+router.get("/update-fixture-data/:competitionShortCode/:yearMonth", async (req, res) => {
+    const { competitionShortCode, yearMonth } = req.params; // yearMonth YYYY-mm format
+    const url = createScrapeUrl(competitionShortCode, "fixtures", yearMonth);
+    try {
+        const { data, error, message } = await scraper.getFixturesAndResults(
+            url,
+            true,
+            competitionNameKeys[competitionShortCode].league,
+            false
         );
-        try {
-            const { data, error, message } =
-                await scraper.getFixturesAndResults(
-                    url,
-                    true,
-                    competitionNameKeys[competitionShortCode].league,
-                    false
-                );
 
-            if (!error) {
-                const result = await Fixtures.bulkWrite(
-                    data.map((eachFixture) => ({
-                        updateOne: {
-                            filter: { id: eachFixture.id },
-                            update: eachFixture,
-                            upsert: true,
-                        },
-                    }))
-                );
+        if (!error) {
+            const result = await Fixtures.bulkWrite(
+                data.map((eachFixture) => ({
+                    updateOne: {
+                        filter: { id: eachFixture.id },
+                        update: eachFixture,
+                        upsert: true,
+                    },
+                }))
+            );
 
-                if (result) {
-                    res.status(200).json({
-                        status: 200,
-                        error: false,
-                        message: `updated fixtures for ${competitionNameKeys[competitionShortCode]} successfully`,
-                        data: null,
-                    });
-                }
-            } else {
-                res.status(400).json({
-                    error: true,
-                    message: message,
+            if (result) {
+                res.status(200).json({
+                    status: 200,
+                    error: false,
+                    message: `updated fixtures for ${competitionNameKeys[competitionShortCode].league} successfully`,
                     data: null,
-                    status: 400,
                 });
             }
-        } catch (err) {
+        } else {
             res.status(400).json({
                 error: true,
-                message: err,
+                message: message,
                 data: null,
                 status: 400,
             });
         }
+    } catch (err) {
+        res.status(400).json({
+            error: true,
+            message: err,
+            data: null,
+            status: 400,
+        });
     }
-);
+});
 
 module.exports = router;
