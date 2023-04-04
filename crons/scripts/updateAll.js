@@ -1,18 +1,10 @@
 const moment = require("moment");
 
 const { Fixtures } = require("../../models/Fixtures");
-const { getFixturesAndResults } = require("../../src/scrapers/index");
-const {
-    getSeasonYear,
-    createScrapeUrl,
-    keys,
-    sleep,
-} = require("../../src/utils");
+const getFixturesAndResults = require("../../src/scrapers/getFixturesAndResults");
+const { getSeasonYear, createScrapeUrl, keys, sleep } = require("../../src/utils");
 
-const updateAllCompetitionGames = async (
-    competitionId = null,
-    minMonth = null
-) => {
+const updateAllCompetitionGames = async (competitionId = null, minMonth = null) => {
     const seasonYearSplit = getSeasonYear().split("/");
     const thisYear = moment().format("yyyy");
 
@@ -36,17 +28,8 @@ const updateAllCompetitionGames = async (
 
     while (moment(CURRENT_TIME, "").isAfter(MIN_TIME)) {
         Object.keys(keys).forEach(async (competition) => {
-            const url = createScrapeUrl(
-                competition,
-                "fixtures",
-                moment(CURRENT_TIME).format("yyyy-MM")
-            );
-            const { data, error } = await getFixturesAndResults(
-                url,
-                true,
-                keys[competition].league,
-                false
-            );
+            const url = createScrapeUrl(competition, "fixtures", moment(CURRENT_TIME).format("yyyy-MM"));
+            const { data, error } = await getFixturesAndResults(url, true, keys[competition].league, false);
 
             if (error) {
                 console.log("error ", error);
@@ -62,9 +45,7 @@ const updateAllCompetitionGames = async (
                 );
                 if (result) {
                     console.log({ result });
-                    console.log(
-                        `Successfully updated month ${CURRENT_TIME} for ${keys[competition].league}`
-                    );
+                    console.log(`Successfully updated month ${CURRENT_TIME} for ${keys[competition].league}`);
                 }
             }
             await sleep(3000);

@@ -3,7 +3,8 @@ const router = Router();
 
 const Standings = require("../models/Standings");
 const { Fixtures } = require("../models/Fixtures");
-const scraper = require("../src/scrapers/index");
+const getStandings = require("../src/scrapers/getStandings");
+const getFixturesAndResults = require("../src/scrapers/getFixturesAndResults");
 const { createScrapeUrl, keys: competitionNameKeys, getSeasonYear } = require("../src/utils");
 
 router.get("/health/", async (req, res) => {
@@ -17,7 +18,7 @@ router.get("/check-standings/:competitionShortCode/", async (req, res) => {
     const { competitionShortCode } = req.params;
 
     const url = createScrapeUrl(competitionShortCode, "standings", null);
-    const { data, error = null } = await scraper.getStandings(url, competitionNameKeys[competitionShortCode].league, true);
+    const { data, error = null } = await getStandings(url, competitionNameKeys[competitionShortCode].league, true);
 
     if (error) {
         res.status(500).json({
@@ -82,12 +83,7 @@ router.get("/update-fixture-data/:competitionShortCode/:yearMonth", async (req, 
     const { competitionShortCode, yearMonth } = req.params; // yearMonth YYYY-mm format
     const url = createScrapeUrl(competitionShortCode, "fixtures", yearMonth);
     try {
-        const { data, error, message } = await scraper.getFixturesAndResults(
-            url,
-            true,
-            competitionNameKeys[competitionShortCode].league,
-            false
-        );
+        const { data, error, message } = await getFixturesAndResults(url, true, competitionNameKeys[competitionShortCode].league, false);
 
         if (!error) {
             const result = await Fixtures.bulkWrite(

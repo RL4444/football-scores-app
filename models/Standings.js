@@ -1,11 +1,11 @@
-const { Schema, model } = require('../db/connection'); // import Schema & model
-const moment = require('moment');
+const { Schema, model } = require("../db/connection"); // import Schema & model
+const moment = require("moment");
 
 // calculate the season
-const currentMonth = Number(moment().format('MM'));
-let seasonShortCode = `${Number(moment().format('yyyy'))}/${Number(moment().format('yyyy')) + 1}`;
+const currentMonth = Number(moment().format("MM"));
+let seasonShortCode = `${Number(moment().format("yyyy"))}/${Number(moment().format("yyyy")) + 1}`;
 if (currentMonth < 6) {
-    seasonShortCode = `${Number(moment().format('yyyy')) - 1}/${Number(moment().format('yyyy'))}`;
+    seasonShortCode = `${Number(moment().format("yyyy")) - 1}/${Number(moment().format("yyyy"))}`;
 }
 
 // User Schema
@@ -14,6 +14,10 @@ const StandingsSchema = new Schema({
     competition: { required: true, type: String },
     season: { required: true, type: String, default: seasonShortCode },
     lastUpdated: { required: true, type: String, default: new Date() },
+    image: { type: String, required: false, default: null },
+    leagueOfficialLink: { tye: String, required: false },
+    googleScrapeTeamsLink: { tye: String, required: false },
+    wikiLink: { tye: String, required: false },
     standings: [
         {
             position: { required: true, type: String },
@@ -31,6 +35,6 @@ const StandingsSchema = new Schema({
 });
 
 // User model
-const Standings = model('Standings', StandingsSchema);
+const Standings = model("Standings", StandingsSchema);
 
 module.exports = Standings;
