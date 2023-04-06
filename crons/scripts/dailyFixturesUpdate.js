@@ -2,7 +2,7 @@ const moment = require("moment");
 const path = require("path");
 const fs = require("fs");
 
-const { Fixtures } = require("../../models/Fixtures");
+const Fixtures = require("../../models/Fixtures");
 const getFixturesAndResults = require("../../src/scrapers/getFixturesAndResults");
 const { keys } = require("../../src/utils");
 

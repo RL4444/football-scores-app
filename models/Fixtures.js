@@ -1,4 +1,4 @@
-const { Schema, model } = require('../db/connection'); // import Schema & model
+const { Schema, model } = require("../db/connection"); // import Schema & model
 
 // User Schema
 const FixtureSchema = new Schema({
@@ -19,6 +19,6 @@ const FixtureSchema = new Schema({
 });
 
 // User model
-const Fixtures = model('Fixture', FixtureSchema);
+const Fixtures = model("Fixture", FixtureSchema);
 
-module.exports = { Fixtures };
+module.exports = Fixtures;

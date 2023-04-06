@@ -2,7 +2,7 @@ const { Router } = require("express"); // import Router from express
 const router = Router();
 
 const Standings = require("../models/Standings");
-const { Fixtures } = require("../models/Fixtures");
+const Fixtures = require("../models/Fixtures");
 const getStandings = require("../src/scrapers/getStandings");
 const getFixturesAndResults = require("../src/scrapers/getFixturesAndResults");
 const { createScrapeUrl, keys: competitionNameKeys, getSeasonYear } = require("../src/utils");

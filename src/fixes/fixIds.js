@@ -1,4 +1,4 @@
-const { Fixtures } = require("../../models/Fixtures");
+const Fixtures = require("../../models/Fixtures");
 const Standings = require("../../models/Standings");
 
 async function deleteBadIds() {

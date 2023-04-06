@@ -1,6 +1,6 @@
 const moment = require("moment");
 
-const { Fixtures } = require("../../models/Fixtures");
+const Fixtures = require("../../models/Fixtures");
 const getFixturesAndResults = require("../../src/scrapers/getFixturesAndResults");
 const { keys, createScrapeUrl, sleep } = require("../../src/utils");
 

@@ -2,7 +2,7 @@ const moment = require("moment");
 const fs = require("fs");
 const path = require("path");
 
-const { Fixtures } = require("../../models/Fixtures");
+const Fixtures = require("../../models/Fixtures");
 const { createScrapeUrl } = require("../../src/utils");
 const { sendMail } = require("../../mailer/index");
 
@@ -25,11 +25,7 @@ const job = async () => {
                 from: moment(game.ko_timestamp).utc(),
                 to: moment(game.ko_timestamp).utc().add(2, "hours"),
                 competition: game.competition_shortcode,
-                url: createScrapeUrl(
-                    game.competition_shortcode,
-                    "fixtures",
-                    moment().format("yyyy-MM")
-                ),
+                url: createScrapeUrl(game.competition_shortcode, "fixtures", moment().format("yyyy-MM")),
                 games: [],
                 thisGame: game.id,
             };
@@ -58,11 +54,8 @@ const job = async () => {
             const seen =
                 jobsFiltered &&
                 jobsFiltered.some((filteredJob) => {
-                    const koTimesMatch =
-                        JSON.stringify(filteredJob.from) ===
-                        JSON.stringify(singleJob.from);
-                    const compsMatch =
-                        filteredJob.competition === singleJob.competition;
+                    const koTimesMatch = JSON.stringify(filteredJob.from) === JSON.stringify(singleJob.from);
+                    const compsMatch = filteredJob.competition === singleJob.competition;
 
                     if (koTimesMatch && compsMatch) {
                         return true;
@@ -75,11 +68,8 @@ const job = async () => {
                 jobsFiltered.push(singleJob);
             } else {
                 jobsFiltered.forEach((jobWhere, idx) => {
-                    const koTimesMatch =
-                        JSON.stringify(jobWhere.from) ===
-                        JSON.stringify(singleJob.from);
-                    const compsMatch =
-                        jobWhere.competition === singleJob.competition;
+                    const koTimesMatch = JSON.stringify(jobWhere.from) === JSON.stringify(singleJob.from);
+                    const compsMatch = jobWhere.competition === singleJob.competition;
 
                     if (koTimesMatch && compsMatch) {
                         jobWhere.games.push(singleJob.thisGame);
@@ -96,10 +86,7 @@ const job = async () => {
             timestamp_updated: moment().utc(),
         };
 
-        fs.writeFileSync(
-            path.join(__dirname, "../jobs.json"),
-            JSON.stringify(updatedJSON)
-        );
+        fs.writeFileSync(path.join(__dirname, "../jobs.json"), JSON.stringify(updatedJSON));
     } catch (err) {
         errorsFound.push(err);
         console.log("error ", errorsFound);
