@@ -5,7 +5,7 @@ const path = require("path");
 const Standings = require("../../models/Standings");
 const getStandings = require("../../src/scrapers/getStandings");
 
-const mapStandingTeamIdstoDb = require("../../src/scrapers/mapStandingTeamIdsToDb");
+const { matchIds } = require("../../src/scrapers/mapStandingTeamIdsToDb");
 const { keys, createScrapeUrl, getSeasonYear, sleep } = require("../../src/utils");
 
 const hourlyStandingsUpdate = async () => {
@@ -28,6 +28,8 @@ const hourlyStandingsUpdate = async () => {
                 throw new Error("error getting standings for ", keys[competition].league);
             }
 
+            const standingsWithIds = await matchIds(data, keys[competition].league);
+
             const result = await Standings.findOneAndUpdate(
                 {
                     id: `${competition}_${getSeasonYear()}`,
@@ -36,7 +38,7 @@ const hourlyStandingsUpdate = async () => {
                     competition: keys[competition].league,
                     season: getSeasonYear(),
                     lastUpdated: new Date(),
-                    standings: data,
+                    standings: standingsWithIds,
                 },
                 { upsert: true, useFindAndModify: false }
             );
@@ -44,8 +46,6 @@ const hourlyStandingsUpdate = async () => {
             if (result) {
                 console.log("result from standings db insert ", { result });
                 console.log("standings insert result from mongo for ", keys[competition].league);
-
-                await mapStandingTeamIdstoDb();
             }
         } catch (error) {
             console.log("error getting standings ", error);
