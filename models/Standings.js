@@ -24,6 +24,7 @@ const StandingsSchema = new Schema({
     ],
     standings: [
         {
+            teamId: { type: String },
             position: { required: true, type: String },
             teamName: { required: true, type: String },
             points: { type: String },

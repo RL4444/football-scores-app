@@ -5,6 +5,7 @@ const path = require("path");
 const Standings = require("../../models/Standings");
 const getStandings = require("../../src/scrapers/getStandings");
 
+const mapStandingTeamIdstoDb = require("../../src/scrapers/mapStandingTeamIdsToDb");
 const { keys, createScrapeUrl, getSeasonYear, sleep } = require("../../src/utils");
 
 const hourlyStandingsUpdate = async () => {
@@ -43,6 +44,8 @@ const hourlyStandingsUpdate = async () => {
             if (result) {
                 console.log("result from standings db insert ", { result });
                 console.log("standings insert result from mongo for ", keys[competition].league);
+
+                await mapStandingTeamIdstoDb();
             }
         } catch (error) {
             console.log("error getting standings ", error);
