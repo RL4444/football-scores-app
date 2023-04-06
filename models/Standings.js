@@ -14,10 +14,14 @@ const StandingsSchema = new Schema({
     competition: { required: true, type: String },
     season: { required: true, type: String, default: seasonShortCode },
     lastUpdated: { required: true, type: String, default: new Date() },
-    image: { type: String, required: false, default: null },
-    leagueOfficialLink: { tye: String, required: false },
-    googleScrapeTeamsLink: { tye: String, required: false },
-    wikiLink: { tye: String, required: false },
+    wikiLink: { type: String },
+    image: { type: String },
+    topScorers: [
+        {
+            name: { type: String },
+            goals: { type: String },
+        },
+    ],
     standings: [
         {
             position: { required: true, type: String },
