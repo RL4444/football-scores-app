@@ -1,4 +1,4 @@
-require('dotenv').config(); // loading env variables
+require("dotenv").config(); // loading env variables
 
 // const Standings = require('../models/Standings');
 // const Fixtures = require('../models/Fixtures');

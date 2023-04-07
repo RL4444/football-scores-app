@@ -1,4 +1,5 @@
 const { Schema, model } = require("../db/connection"); // import Schema & model
+const { getSeasonYear } = require("../src/utils");
 
 // User Schema
 const FixtureSchema = new Schema({
@@ -16,6 +17,7 @@ const FixtureSchema = new Schema({
     kickoff_time: { type: String, required: false },
     status: { type: String, required: true },
     postponed: { type: Boolean, required: true, default: false },
+    season: { type: String, required: true, default: getSeasonYear() },
 });
 
 // User model
