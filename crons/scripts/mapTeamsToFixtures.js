@@ -1,17 +1,8 @@
-const request = require("request-promise");
-const fs = require("fs");
-const path = require("path");
 const { findBestMatch } = require("string-similarity");
-require("dotenv").config({ path: path.resolve(__dirname, "../../../../.env") });
+const Fixtures = require("../../models/Fixtures");
+const Teams = require("../../models/Team");
 
-const { getTeamsFromWiki, getTopScorersFromWiki, scrapeFootballWikiData } = require("./wiki");
-const { keys, getSeasonYear, sleep } = require("../../utils");
-
-const Teams = require("../../../models/Team");
-const Fixtures = require("../../../models/Fixtures");
-// const { GOOGLE_SEARCH_ENGINE_ID, GOOGLE_SEARCH_API_KEY } = process.env;
-
-const main = async () => {
+const job = async () => {
     const allFixtures = await Fixtures.find({ season: getSeasonYear() });
     const teams = await Teams.find();
 
@@ -28,9 +19,6 @@ const main = async () => {
         }
     };
 
-    // allFixtures.forEach((eachFixture) => {
-    //     console.log(`${matchTeamName(eachFixture.home_team)} vs ${matchTeamName(eachFixture.away_team)}`);
-    // });
     const result = await Fixtures.bulkWrite(
         allFixtures.map((eachFixture) => ({
             updateOne: {
@@ -48,4 +36,4 @@ const main = async () => {
     }
 };
 
-main();
+module.exports = job;
