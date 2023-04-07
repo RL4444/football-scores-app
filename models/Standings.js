@@ -12,6 +12,7 @@ if (currentMonth < 6) {
 const StandingsSchema = new Schema({
     id: { required: true, type: String },
     competition: { required: true, type: String },
+    competitionShortCode: { required: true, type: String },
     season: { required: true, type: String, default: seasonShortCode },
     lastUpdated: { required: true, type: String, default: new Date() },
     wikiLink: { type: String },
