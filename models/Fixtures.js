@@ -12,6 +12,8 @@ const FixtureSchema = new Schema({
     away_team: { type: String, required: true },
     away_team_score: { type: String },
     away_team_id: { type: String },
+    stadium: { type: String },
+    location: { type: String },
     long_date: { type: String, required: true },
     last_updated: { type: Date, required: true, default: new Date() },
     short_date: { type: String, required: true },

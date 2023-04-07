@@ -28,20 +28,42 @@ const main = async () => {
         }
     };
 
+    const getStadiumAndLocation = (teamId) => {
+        const { info } = teams.find((eachTeam) => eachTeam.id === teamId);
+        if (info) {
+            const infoObj = {
+                location: info.location || info.city || "",
+                stadium: info.stadium || "",
+            };
+            return infoObj;
+        } else {
+            console.log("error finding match");
+        }
+    };
+
     // allFixtures.forEach((eachFixture) => {
     //     console.log(`${matchTeamName(eachFixture.home_team)} vs ${matchTeamName(eachFixture.away_team)}`);
     // });
     const result = await Fixtures.bulkWrite(
-        allFixtures.map((eachFixture) => ({
-            updateOne: {
-                filter: { id: eachFixture.id },
-                update: {
-                    home_team_id: matchTeamName(eachFixture.home_team),
-                    away_team_id: matchTeamName(eachFixture.away_team),
+        allFixtures.map((eachFixture) => {
+            const homeTeamId = matchTeamName(eachFixture.home_team);
+            const awayTeamId = matchTeamName(eachFixture.away_team);
+
+            const { location, stadium } = getStadiumAndLocation(homeTeamId);
+
+            return {
+                updateOne: {
+                    filter: { id: eachFixture.id },
+                    update: {
+                        home_team_id: homeTeamId,
+                        away_team_id: awayTeamId,
+                        location,
+                        stadium,
+                    },
+                    upsert: true,
                 },
-                upsert: true,
-            },
-        }))
+            };
+        })
     );
     if (result) {
         console.log({ result });
