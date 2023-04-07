@@ -1,15 +1,9 @@
-const request = require("request-promise");
-const fs = require("fs");
-const path = require("path");
-require("dotenv").config({ path: path.resolve(__dirname, "../../../../.env") });
+const Teams = require("../../models/Team");
+const { scrapeFootballWikiData } = require("../../src/scrapers/scripts/wiki");
+const { sleep } = require("../../src/utils");
 
-const { getTeamsFromWiki, getTopScorersFromWiki, scrapeFootballWikiData } = require("./wiki");
-const { keys, getSeasonYear, sleep } = require("../../utils");
-const Teams = require("../../../models/Team");
-// const { GOOGLE_SEARCH_ENGINE_ID, GOOGLE_SEARCH_API_KEY } = process.env;
-
-const main = async () => {
-    const teams = await Teams.find({ name: "Chelsea" });
+const job = async () => {
+    const teams = await Teams.find();
     const teamsWithUpdatedInfo = [];
 
     for (let i = 0; i < teams.length; i++) {
@@ -37,4 +31,4 @@ const main = async () => {
     console.log({ result });
 };
 
-main();
+module.exports = job;

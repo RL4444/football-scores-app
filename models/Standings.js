@@ -20,6 +20,7 @@ const StandingsSchema = new Schema({
     topScorers: [
         {
             name: { type: String },
+            club: { type: String },
             goals: { type: String },
         },
     ],

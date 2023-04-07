@@ -30,17 +30,28 @@ const scrapeFootballWikiData = async (url) => {
             })
             .get();
 
-        const formattedObject = {};
+        const formattedObjectRaw = {};
         info.forEach((item) => {
             // removing the stadium size from the stadium title and adding as its own keypair
             if (item.stadium) {
                 if (item.stadium.indexOf("(") > -1 && item.stadium.indexOf(")") > -1) {
-                    formattedObject.stadium_capacity = item.stadium.substring(item.stadium.indexOf("(") + 1, item.stadium.lastIndexOf(")"));
+                    formattedObjectRaw.stadium_capacity = item.stadium.substring(
+                        item.stadium.indexOf("(") + 1,
+                        item.stadium.lastIndexOf(")")
+                    );
                     item.stadium = item.stadium.slice(0, item.stadium.indexOf("(")).trim();
                 }
             }
 
-            formattedObject[Object.keys(item)[0]] = Object.values(item)[0];
+            formattedObjectRaw[Object.keys(item)[0]] = Object.values(item)[0];
+        });
+
+        // double check no keypairs with empty values return
+        const formattedObject = {};
+        Object.keys(formattedObjectRaw).forEach((keyPair) => {
+            if (formattedObjectRaw[keyPair].trim()) {
+                formattedObject[keyPair] = formattedObjectRaw[keyPair];
+            }
         });
 
         return {
@@ -110,9 +121,10 @@ const getTopScorersFromWiki = async (url) => {
         });
 
         const $ = cheerio.load(response.body);
-
         let statsElemId = "#Season_statistics";
-        if (!$(statsElemId).text().trim()) {
+        console.log("test cheerio loading", $(statsElemId).text());
+
+        if (!$(statsElemId).text()) {
             statsElemId = "#Statistics";
         }
 
@@ -123,14 +135,13 @@ const getTopScorersFromWiki = async (url) => {
             .find("tbody > tr")
             .map((idx, elem) => {
                 const player = {};
-                if (Number($(elem).find("td:nth-child(1)").text())) {
-                    console.log("found number ", $(elem).find("td:nth-child(1)").text());
-                    player.rank = $(elem).find("td:nth-child(1)").text().replace("\n", "");
+                if (Number($(elem).find("td:nth-child(1)").text().trim())) {
+                    console.log("has a rank and name ", $(elem).find("td:nth-child(2)").text());
                     player.name = $(elem).find("td:nth-child(2)").text().replace("\n", "").trim();
                     player.club = $(elem).find("td:nth-child(3)").text().replace("\n", "");
                     player.goals = $(elem).find("td:nth-child(4)").text().replace("\n", "");
                 } else {
-                    player.rank = $(elem).prev().find("td:nth-child(1)").text().replace("\n", "");
+                    console.log("should be the name ", $(elem).find("td:nth-child(1)").text().replace("\n", ""));
                     player.name = $(elem).find("td:nth-child(1)").text().replace("\n", "").trim();
                     player.club = $(elem).find("td:nth-child(2)").text().replace("\n", "");
                     player.goals = $(elem).prev().find("td:nth-child(4)").text().replace("\n", "");
@@ -141,9 +152,19 @@ const getTopScorersFromWiki = async (url) => {
                 }
             })
             .get();
+        let currentGoal = 0;
+        const topScorersTableWithCorrectGoals = topScorersTable.map((player) => {
+            if (player.goals) {
+                currentGoal = player.goals;
+            } else {
+                player.goals = currentGoal;
+            }
 
-        if (topScorersTable.length) {
-            return topScorersTable;
+            return player;
+        });
+
+        if (topScorersTableWithCorrectGoals.length) {
+            return topScorersTableWithCorrectGoals;
         } else {
             return [];
         }
