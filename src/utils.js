@@ -3,8 +3,6 @@ const moment = require("moment");
 const sleep = async (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
 };
-const sortDate = (date) => {};
-
 const keys = {
     en: { league: "premier-league", wikiLeagueKey: "Premier_League", cup: "" },
     fr: { league: "french-ligue-one", wikiLeagueKey: "Ligue_1", cup: "" },
@@ -82,5 +80,4 @@ module.exports = {
     isLastDayOfMonth,
     keys,
     sleep,
-    sortDate,
 };

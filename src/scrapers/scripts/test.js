@@ -1,6 +1,7 @@
 const request = require("request-promise");
 const fs = require("fs");
 const path = require("path");
+const mongoose = require("mongoose");
 const { findBestMatch } = require("string-similarity");
 require("dotenv").config({ path: path.resolve(__dirname, "../../../../.env") });
 
@@ -22,52 +23,57 @@ const main = async () => {
         );
 
         if (bestMatchIndex >= 0) {
-            return teams[bestMatchIndex].id;
+            return teams[bestMatchIndex]._id;
         } else {
             console.log("error finding match");
         }
     };
 
-    const getStadiumAndLocation = (teamId) => {
-        const { info } = teams.find((eachTeam) => eachTeam.id === teamId);
-        if (info) {
-            const infoObj = {
-                location: info.location || info.city || "",
-                stadium: info.stadium || "",
-            };
-            return infoObj;
-        } else {
-            console.log("error finding match");
-        }
-    };
-
-    // allFixtures.forEach((eachFixture) => {
-    //     console.log(`${matchTeamName(eachFixture.home_team)} vs ${matchTeamName(eachFixture.away_team)}`);
-    // });
     const result = await Fixtures.bulkWrite(
-        allFixtures.map((eachFixture) => {
-            const homeTeamId = matchTeamName(eachFixture.home_team);
-            const awayTeamId = matchTeamName(eachFixture.away_team);
-
-            const { location, stadium } = getStadiumAndLocation(homeTeamId);
-
-            return {
-                updateOne: {
-                    filter: { id: eachFixture.id },
-                    update: {
-                        home_team_id: homeTeamId,
-                        away_team_id: awayTeamId,
-                        location,
-                        stadium,
-                    },
-                    upsert: true,
+        allFixtures.map((eachFixture) => ({
+            updateOne: {
+                filter: { id: eachFixture.id },
+                update: {
+                    home_team_id: matchTeamName(eachFixture.home_team),
+                    away_team_id: matchTeamName(eachFixture.away_team),
                 },
-            };
-        })
+                upsert: true,
+            },
+        }))
     );
     if (result) {
         console.log({ result });
     }
+    // const data = await Fixtures.aggregate([
+    //     {
+    //         $lookup: [
+    //             {
+    //                 from: "Teams",
+    //                 localField: "home_team_id",
+    //                 foreignField: "id",
+    //                 as: "home_team_info",
+    //             },
+    //             {
+    //                 from: "Teams",
+    //                 localField: "away_team_id",
+    //                 foreignField: "id",
+    //                 as: "away_team_info",
+    //             },
+    //         ],
+    //     },
+    // ]);
+
+    // console.log({ data });
+
+    // const allTeams = await Teams.find({});
+    // const teamsWithObjectIds = allTeams.map((eachTeam) => {
+    //     const teamToReturn = { ...eachTeam };
+    //     teamToReturn.fixedId = mongoose.Types.ObjectId(teamToReturn.id);
+
+    //     return eachTeam;
+    // });
+
+    // console.log({ teamsWithObjectIds: teamsWithObjectIds.slice(0, 2) });
 };
 
 main();

@@ -12,7 +12,7 @@ async function matchIds(countryStandings, countryLeagueLongName) {
     const standingsWithIds = countryStandings.map((standingsTeam) => {
         const nameToMatch = standingsTeam.teamName;
         const { bestMatch, bestMatchIndex } = stringSimilarity.findBestMatch(nameToMatch, teamsListNames);
-        const matchedId = teamsFromDbModel[bestMatchIndex].id;
+        const matchedId = teamsFromDbModel[bestMatchIndex]._id;
 
         if (bestMatch.rating < 1) {
             console.log(`${nameToMatch} -> ${bestMatch.target} with id ${matchedId} as ${bestMatch.rating}`);
@@ -45,6 +45,8 @@ async function main() {
         console.log({ error });
     }
 }
+
+main();
 
 module.exports = {
     main,

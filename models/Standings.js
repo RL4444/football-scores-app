@@ -26,7 +26,7 @@ const StandingsSchema = new Schema({
     ],
     standings: [
         {
-            teamId: { type: String },
+            teamId: Schema.Types.ObjectId,
             position: { required: true, type: String },
             teamName: { required: true, type: String },
             points: { type: String },

@@ -13,7 +13,7 @@ const job = async () => {
         );
 
         if (bestMatchIndex >= 0) {
-            return teams[bestMatchIndex].id;
+            return teams[bestMatchIndex]._id;
         } else {
             console.log("error finding match");
         }
