@@ -60,7 +60,7 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                             away_team: awayTeamName,
                             home_team_score: $(row).find(".sp-c-fixture__number--home").text() || null,
                             away_team_score: $(row).find(".sp-c-fixture__number--away").text() || null,
-                            long_date: blockDate,
+                            long_date: moment(shortDate + " 12:00", "DD-MM-yyyy HH:mm"), // default date purely for API date sorting
                             short_date: shortDate,
                             last_updated: moment.utc(),
                             // defaults
@@ -77,6 +77,11 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                         if (koTimestamp && isTimestamp) {
                             fixture.kickoff_time = $(row).find("span.sp-c-fixture__number--time").text();
                             fixture.ko_timestamp = moment.utc(fixture.short_date + " " + koTimestamp, "DD-MM-yyyy HH:mm").format();
+                        }
+
+                        if (moment(fixture.long_date).isAfter(moment()) && !fixture.ko_timestamp) {
+                            fixture.status = "KO TBC";
+                            fixture.kickoff_time = "TBC";
                         }
 
                         // create list of postponed fixtures
