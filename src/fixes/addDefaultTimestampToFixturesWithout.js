@@ -37,5 +37,5 @@ const main = async () => {
     console.log({ curFixture });
     // fs.writeFileSync("./sandbox/fix-time/output", JSON.stringify({ data: fixedFixtures }));
 };
-
-main();
+module.exports = main;
+// main();

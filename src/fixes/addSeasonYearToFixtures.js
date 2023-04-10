@@ -14,4 +14,6 @@ async function main() {
     console.log({ result });
 }
 
-main();
+module.exports = main;
+
+// main();

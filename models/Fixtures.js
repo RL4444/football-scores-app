@@ -7,6 +7,7 @@ const FixtureSchema = new Schema({
     competition: { required: true, type: String },
     competition_shortcode: { type: String, required: true },
     competition_id: Schema.Types.ObjectId,
+    competition_image: { type: String },
     home_team: { type: String, required: true },
     home_team_score: { type: String },
     home_team_id: Schema.Types.ObjectId,
