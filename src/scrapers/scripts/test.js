@@ -12,68 +12,65 @@ const Teams = require("../../../models/Team");
 const Fixtures = require("../../../models/Fixtures");
 // const { GOOGLE_SEARCH_ENGINE_ID, GOOGLE_SEARCH_API_KEY } = process.env;
 
-const main = async () => {
-    const allFixtures = await Fixtures.find({ season: getSeasonYear() });
-    const teams = await Teams.find();
-
-    const matchTeamName = (teamNameToCheck) => {
-        const { bestMatchIndex } = findBestMatch(
-            teamNameToCheck,
-            teams.map(({ longName }) => longName)
-        );
-
-        if (bestMatchIndex >= 0) {
-            return teams[bestMatchIndex]._id;
-        } else {
-            console.log("error finding match");
-        }
-    };
-
-    const result = await Fixtures.bulkWrite(
-        allFixtures.map((eachFixture) => ({
-            updateOne: {
-                filter: { id: eachFixture.id },
-                update: {
-                    home_team_id: matchTeamName(eachFixture.home_team),
-                    away_team_id: matchTeamName(eachFixture.away_team),
-                },
-                upsert: true,
+const main = async (countryCode, seasonYear = getSeasonYear()) => {
+    const data = await Fixtures.aggregate([
+        { $match: { season: seasonYear, competition_shortcode: countryCode } },
+        // { $project: { home_team_id: 1 } },
+        {
+            $lookup: {
+                from: "teams",
+                localField: "home_team_id", //this is the _id user from Teams
+                foreignField: "_id", //this is the home_team__id from Fixture
+                as: "home_team",
             },
-        }))
-    );
-    if (result) {
-        console.log({ result });
-    }
-    // const data = await Fixtures.aggregate([
-    //     {
-    //         $lookup: [
-    //             {
-    //                 from: "Teams",
-    //                 localField: "home_team_id",
-    //                 foreignField: "id",
-    //                 as: "home_team_info",
-    //             },
-    //             {
-    //                 from: "Teams",
-    //                 localField: "away_team_id",
-    //                 foreignField: "id",
-    //                 as: "away_team_info",
-    //             },
-    //         ],
-    //     },
-    // ]);
+        },
+        {
+            $lookup: {
+                from: "teams",
+                localField: "away_team_id", //this is the _id from Teams
+                foreignField: "_id", //this is the away_team_id from Fixture
+                as: "away_team",
+            },
+        },
+        { $unwind: "$home_team" },
+        { $unwind: "$away_team" },
 
-    // console.log({ data });
+        {
+            $project: {
+                id: "$id",
+                competition: "$competiton",
+                countryCode: "$competition_shortcode",
+                homeTeam: {
+                    teamId: "$home_team._id",
+                    name: "$home_team.name",
+                    longName: "$home_team.longName",
+                    score: "$home_team_score",
+                    shortCode: "$home_team.info.short_name",
+                    image: "home_team.image",
+                },
+                awayTeam: {
+                    teamId: "$away_team._id",
+                    name: "$away_team.name",
+                    longName: "$away_team.longName",
+                    score: "$away_team_score",
+                    shortCode: "$away_team.info.short_name",
+                    image: "away_team.image",
+                },
+                shortDate: "$short_date",
+                koTimestamp: "$ko_timestamp",
+                ko: "$kickoff_time",
+                status: "$status",
+                postponed: "$postponed",
+                season: "$season",
+                stadium: "$stadium",
+                location: "$location",
+            },
+        },
+    ]);
 
-    // const allTeams = await Teams.find({});
-    // const teamsWithObjectIds = allTeams.map((eachTeam) => {
-    //     const teamToReturn = { ...eachTeam };
-    //     teamToReturn.fixedId = mongoose.Types.ObjectId(teamToReturn.id);
+    console.log({ data });
 
-    //     return eachTeam;
-    // });
-
-    // console.log({ teamsWithObjectIds: teamsWithObjectIds.slice(0, 2) });
+    fs.writeFileSync(`./sandbox/test-aggregation/${countryCode}.json`, JSON.stringify({ data: data }));
 };
 
-main();
+main("en");

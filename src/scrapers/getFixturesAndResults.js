@@ -76,7 +76,6 @@ async function getFixturesAndResults(url, hidePostponed = true, competition, cre
                         // if fixture date > date now() this is a future fixture
                         if (koTimestamp && isTimestamp) {
                             fixture.kickoff_time = $(row).find("span.sp-c-fixture__number--time").text();
-
                             fixture.ko_timestamp = moment.utc(fixture.short_date + " " + koTimestamp, "DD-MM-yyyy HH:mm").format();
                         }
 
