@@ -10,8 +10,13 @@ const populateJobsList = require("./scripts/populateJobsList");
 const dailyFixturesUpdate = require("./scripts/dailyFixturesUpdate");
 const updateLeagueTopScorers = require("./scripts/updateLeagueTopScorers");
 const mapTeamsToFixtures = require("./scripts/mapTeamsToFixtures");
+const resetUsersApiLimit = require("./scripts/resetUsersAPILimit");
 
 const { isLastDayOfMonth } = require("../src/utils");
+
+const resetUsersApiLimitJob = cron.schedule("1 04 * * *", async () => {
+    await resetUsersApiLimit();
+});
 
 const updateFixturesTeamsIds = cron.schedule("55 23 28-31 * *", async () => {
     if (isLastDayOfMonth) {
@@ -72,3 +77,4 @@ standingsUpdateJob.start();
 topScorersUpdateJob.start();
 updateTeamInfoJob.start();
 updateFixturesTeamsIds.start();
+resetUsersApiLimitJob.start();

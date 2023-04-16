@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require("moment");
 
 // normal #0251d5;
 // error red #fa125a
@@ -19,7 +19,7 @@ const monthlyScrapeReport = (args) => `
                             <li key=${idx}><b>${eachFixture.id}</b> - ${eachFixture.date}</li>
                         `;
                         })
-                        .join('')}
+                        .join("")}
                     </ul>
                 </div>
             </div>
@@ -39,14 +39,14 @@ const scheduleUpdateResult = (args) => `
                             .map((eachJob, idx) => {
                                 return `
                             <div style='margin-top: 1em;'>
-                            <h4>Competition ${eachJob.competition} @ ${moment(eachJob.from).format('HH:mm')} GMT+00</h4>
+                            <h4>Competition ${eachJob.competition} @ ${moment(eachJob.from).format("HH:mm")} GMT+00</h4>
                                 <ul>
-                                ${eachJob.games.map((eachGame) => `<li key='${eachGame}'> ${eachGame}</li>`).join('')}
+                                ${eachJob.games.map((eachGame) => `<li key='${eachGame}'> ${eachGame}</li>`).join("")}
                                 </ul>
                             </div>
                             `;
                             })
-                            .join('')}
+                            .join("")}
                     </div>
                 </div>
             </body>
@@ -63,7 +63,7 @@ const errorReport = (args) => `
                      <div style="padding: 25px;">
                         <h4>Logged</h4>
                         <ul>
-                            ${args.errors.map((eachError, idx) => `<li key='${idx}'>${eachError}</li>`).join('')}
+                            ${args.errors.map((eachError, idx) => `<li key='${idx}'>${eachError}</li>`).join("")}
                         </ul>                    
                     </div>
                 </div>
@@ -84,7 +84,7 @@ const testMail = (args) => `
                         
                         <p style='margin-top: 1em; color:#000;'>${args.testString}</p>
                         <ul>
-                        ${args.testArray.map((item) => `<li key='${item}'>${item}</li>`).join('')}
+                        ${args.testArray.map((item) => `<li key='${item}'>${item}</li>`).join("")}
                         </ul>
 
                         <p style='color: #000;'>Automated message</p>
