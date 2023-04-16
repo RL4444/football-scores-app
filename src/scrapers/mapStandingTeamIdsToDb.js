@@ -20,6 +20,7 @@ async function matchIds(countryStandings, countryLeagueLongName) {
 
         const objectToReturn = standingsTeam;
         objectToReturn.teamId = matchedId;
+        objectToReturn.image = teamsFromDbModel[bestMatchIndex].image;
         return objectToReturn;
     });
 

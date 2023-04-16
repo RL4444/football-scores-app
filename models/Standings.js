@@ -37,6 +37,7 @@ const StandingsSchema = new Schema({
             goalsFor: { type: String },
             goalsAgainst: { type: String },
             goalDifference: { type: String },
+            image: { type: String },
         },
     ],
 });
