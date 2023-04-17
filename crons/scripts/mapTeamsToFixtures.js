@@ -1,6 +1,7 @@
 const { findBestMatch } = require("string-similarity");
 const Fixtures = require("../../models/Fixtures");
 const Teams = require("../../models/Team");
+const { getSeasonYear } = require("../../src/utils");
 
 const job = async () => {
     const allFixtures = await Fixtures.find({ season: getSeasonYear() });
@@ -35,5 +36,6 @@ const job = async () => {
         console.log({ result });
     }
 };
+job();
 
 module.exports = job;
