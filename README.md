@@ -28,6 +28,8 @@ Go the project root and run `npm install`
 
 Add .env vars listed in previous section
 
+start the dev server using `npm run dev`. If you have created a Mongo DB for this project as in the previous step, the schema will now be present their since we will have initialised the database when establishing the server connection. 
+
 go to localhost 8080 and run in Postman / Insomnia 
 `https;//localhost:8080/scrape/update-fixture-data/:competitionShortCode/:yearMonth` where competition is one of the `keys` found here `./src/utils.js` and year month in `YYYY-MM` format e.g. (2004-12)
 
