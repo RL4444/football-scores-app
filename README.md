@@ -1,4 +1,4 @@
-# FOOTBALL SCORES SCRAPER APP #
+# Live Football Scores Scraper PreProcessor with Data Persistence #
 
 ## Built with node, express, nodemailer, mongoose, node-cron and more ##
 
