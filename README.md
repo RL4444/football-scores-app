@@ -25,7 +25,9 @@ The app will only take links from the BBC football fixtures and results pages (l
 
 ## To Start getting scores immediately ##
 Go the project root and run `npm install`
+
 Add .env vars listed in previous section
+
 go to localhost 8080 and run in Postman / Insomnia 
 `https;//localhost:8080/scrape/update-fixture-data/:competitionShortCode/:yearMonth` where competition is one of the `keys` found here `./src/utils.js` and year month in `YYYY-MM` format e.g. (2004-12)
 
